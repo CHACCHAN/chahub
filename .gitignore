@@ -22,4 +22,5 @@
 # Gemini
 !.gemini/
 .gemini/*
-!.gemini/settings.json
+!.gemini/config/
+!.gemini/config/**
