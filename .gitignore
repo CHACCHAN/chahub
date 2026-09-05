@@ -1,5 +1,6 @@
 *
 !.gitignore
+!.agent_install.sh
 
 # Claude
 !.claude/
