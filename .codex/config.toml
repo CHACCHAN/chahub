@@ -1,0 +1,11 @@
+model = "gpt-5.6-sol"
+model_reasoning_effort = "xhigh"
+approval_policy = "never"
+sandbox_mode = "danger-full-access"
+
+[projects."/infrastructure"]
+trust_level = "trusted"
+
+[projects."/cc-discord-framework"]
+trust_level = "trusted"
+
