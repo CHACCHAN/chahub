@@ -1,0 +1,73 @@
+{
+  "features": {
+    "ghcr.io/casl0/devcontainer-features/android-sdk:1": {
+      "version": "1.0.1",
+      "resolved": "ghcr.io/casl0/devcontainer-features/android-sdk@sha256:4a5033245cf7557bfce4efdf20ac6d32b490e3bab8bfd225f7819ab1026b513e",
+      "integrity": "sha256:4a5033245cf7557bfce4efdf20ac6d32b490e3bab8bfd225f7819ab1026b513e"
+    },
+    "ghcr.io/chacchan/devcontainer-features/agents:latest": {
+      "version": "1.0.3",
+      "resolved": "ghcr.io/chacchan/devcontainer-features/agents@sha256:c5bc5bbd38d52534d5276569cb03653b6e65e807ea509cb48c94ee25505a3cb2",
+      "integrity": "sha256:c5bc5bbd38d52534d5276569cb03653b6e65e807ea509cb48c94ee25505a3cb2",
+      "dependsOn": [
+        "ghcr.io/devcontainers/features/node:2"
+      ]
+    },
+    "ghcr.io/chacchan/devcontainer-features/my-assets:latest": {
+      "version": "1.0.1",
+      "resolved": "ghcr.io/chacchan/devcontainer-features/my-assets@sha256:6bd549be6d97468f0e28d29d3a54a8ba321b88d3fdc12b81c0b0b7e3cde63c81",
+      "integrity": "sha256:6bd549be6d97468f0e28d29d3a54a8ba321b88d3fdc12b81c0b0b7e3cde63c81",
+      "dependsOn": [
+        "ghcr.io/chacchan/devcontainer-features/agents:latest",
+        "ghcr.io/devcontainers/features/docker-outside-of-docker:1",
+        "ghcr.io/devcontainers-extra/features/apt-packages:1",
+        "ghcr.io/thediveo/devcontainer-features/lazygit:0"
+      ]
+    },
+    "ghcr.io/devcontainers-extra/features/apt-packages:1": {
+      "version": "1.0.6",
+      "resolved": "ghcr.io/devcontainers-extra/features/apt-packages@sha256:55c54412112da81b9381e470cdbbe55278564950d1ff536ce925b1e8e096babd",
+      "integrity": "sha256:55c54412112da81b9381e470cdbbe55278564950d1ff536ce925b1e8e096babd"
+    },
+    "ghcr.io/devcontainers/features/docker-outside-of-docker:1": {
+      "version": "1.10.0",
+      "resolved": "ghcr.io/devcontainers/features/docker-outside-of-docker@sha256:c2c2cf829505ead8e4892c88c31b6594ae94a2bbb209e16e1fac456c1a3a624e",
+      "integrity": "sha256:c2c2cf829505ead8e4892c88c31b6594ae94a2bbb209e16e1fac456c1a3a624e"
+    },
+    "ghcr.io/devcontainers/features/java:1": {
+      "version": "1.8.3",
+      "resolved": "ghcr.io/devcontainers/features/java@sha256:61a839211feda1e2a1f10646648a948e733e4d98d770f3a4b6698a3c5fc92abe",
+      "integrity": "sha256:61a839211feda1e2a1f10646648a948e733e4d98d770f3a4b6698a3c5fc92abe"
+    },
+    "ghcr.io/devcontainers/features/node:2": {
+      "version": "2.1.0",
+      "resolved": "ghcr.io/devcontainers/features/node@sha256:586c9a6f7dd40bd3ba2cd41e7f2f88dcc31fbe5d1442afcbf07ffbc66b686857",
+      "integrity": "sha256:586c9a6f7dd40bd3ba2cd41e7f2f88dcc31fbe5d1442afcbf07ffbc66b686857"
+    },
+    "ghcr.io/devcontainers/features/rust:1": {
+      "version": "1.5.1",
+      "resolved": "ghcr.io/devcontainers/features/rust@sha256:f7afd923fd283db88ca961342ae65ea63a8c95bcf86e42c4c363f43bc4ba26a5",
+      "integrity": "sha256:f7afd923fd283db88ca961342ae65ea63a8c95bcf86e42c4c363f43bc4ba26a5"
+    },
+    "ghcr.io/itsmechlark/features/postgresql:1": {
+      "version": "1.9.0",
+      "resolved": "ghcr.io/itsmechlark/features/postgresql@sha256:356d919ede2f7dce3f921b424301f965eeeb63e67840afec26eeb362998f08f9",
+      "integrity": "sha256:356d919ede2f7dce3f921b424301f965eeeb63e67840afec26eeb362998f08f9"
+    },
+    "ghcr.io/olivierlemasle/devcontainers-features/tauri:1": {
+      "version": "1.0.0",
+      "resolved": "ghcr.io/olivierlemasle/devcontainers-features/tauri@sha256:7bc1f55aa938b281311098beadf74603e979601bb7de87115b4470fb5123341c",
+      "integrity": "sha256:7bc1f55aa938b281311098beadf74603e979601bb7de87115b4470fb5123341c"
+    },
+    "ghcr.io/rails/devcontainer/features/bun:1": {
+      "version": "1.0.2",
+      "resolved": "ghcr.io/rails/devcontainer/features/bun@sha256:08057c197a8cde49b08749681607bf0d69aed79e280225cf43ca5d1782028789",
+      "integrity": "sha256:08057c197a8cde49b08749681607bf0d69aed79e280225cf43ca5d1782028789"
+    },
+    "ghcr.io/thediveo/devcontainer-features/lazygit:0": {
+      "version": "0.0.2",
+      "resolved": "ghcr.io/thediveo/devcontainer-features/lazygit@sha256:7446fc735ea16d9e5dfe37bcfb179e4174463c249464f9ef872b66933b85d850",
+      "integrity": "sha256:7446fc735ea16d9e5dfe37bcfb179e4174463c249464f9ef872b66933b85d850"
+    }
+  }
+}

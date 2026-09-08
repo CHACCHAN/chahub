@@ -1,0 +1,23 @@
+{
+  "pgsql.connections": [
+    {
+      "authenticationType": "None",
+      "server": "localhost",
+      "port": "5432",
+      "database": "chahub",
+      "user": "postgres",
+      "password": "",
+      "emptyPasswordInput": true,
+      "savePassword": false,
+      "profileName": "ChaHub Dev",
+      "connectTimeout": 15,
+      "applicationName": "vscode-pgsql",
+      "clientEncoding": "utf8",
+      "sslmode": "disable",
+      "id": "61700A32-6434-49ED-BF9F-1E8236DF5A07",
+      "groupId": "64F81C83-685D-47A4-ADE6-3C04042ADA2C",
+      "expiresOn": 0,
+      "sshPassword": ""
+    }
+  ]
+}

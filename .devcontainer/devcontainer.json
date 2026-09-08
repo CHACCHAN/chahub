@@ -1,0 +1,49 @@
+{
+    "name": "ChaHub Dev",
+    "remoteUser": "vscode",
+    "updateRemoteUserUID": true,
+    "image": "mcr.microsoft.com/devcontainers/base:trixie",
+    "features": {
+        "ghcr.io/chacchan/devcontainer-features/my-assets:latest": {},
+        "ghcr.io/rails/devcontainer/features/bun:1": {},
+        "ghcr.io/devcontainers/features/rust:1": {
+            "targets": "aarch64-linux-android,armv7-linux-androideabi,i686-linux-android,x86_64-linux-android"
+        },
+        "ghcr.io/devcontainers/features/java:1": {
+            "version": "17"
+        },
+        "ghcr.io/casl0/devcontainer-features/android-sdk:1": {
+            "platformsVersion": "36",
+            "buildToolsVersion": "36.0.0",
+            "installNdk": true,
+            "ndkVersion": "27.3.13750724"
+        },
+        "ghcr.io/olivierlemasle/devcontainers-features/tauri:1": {},
+        "ghcr.io/itsmechlark/features/postgresql:1": {
+            "version": "18"
+        }
+    },
+    "workspaceFolder": "/${localWorkspaceFolderBasename}",
+    "workspaceMount": "source=${localWorkspaceFolder},target=/${localWorkspaceFolderBasename},type=bind,consistency=cached",
+    "containerEnv": {
+        "ANDROID_HOME": "/usr/local/android",
+        "NDK_HOME": "/usr/local/android/ndk/27.3.13750724"
+    },
+    "customizations": {
+        "vscode": {
+            "extensions": [
+                "dbaeumer.vscode-eslint",
+                "esbenp.prettier-vscode",
+                "bradlc.vscode-tailwindcss",
+                "eamodio.gitlens",
+                "usernamehw.errorlens",
+                "eamodio.gitlens",
+                "streetsidesoftware.code-spell-checker",
+                "Prisma.prisma"
+            ],
+            "settings": {
+                "editor.tabSize": 2
+            }
+        }
+    }
+}
