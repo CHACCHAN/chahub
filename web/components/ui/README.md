@@ -23,6 +23,7 @@ import { Card, List, ListItem, Input, Button, Badge, TextLink } from "@/componen
 
 - `Button`: primary / secondary / danger。既定は `type="button"`。フォーム送信には `type="submit"` を指定します。`pending` でスピナー・連打防止、`pendingLabel` で処理中の文言、`fullWidth` で全幅になります。
 - `TextLink`: 本文中や見出し横に置くインディゴのテキストリンク。パネル全体をリンクにするときは `CardLink`。
+- `CopyButton`: `text` をクリップボードにコピーする小さなボタン(Client Component)。成功すると一時的に「コピーしました」と表示します。
 - `Card` / `CardLink`: 同じ枠線・背景・角丸のパネル。`title` を渡すと見出し帯(`h2` + `meta` + `description` + 右側の `action`)と本文の構造になり、`aria-labelledby` も自動で付きます。本文に `List` を直接置くときは `divided` で区切り線を引きます。`title` なしのときは余白を `className` で指定します。
 - `List` / `ListItem`: 区切り線付きの縦リスト。`empty` を渡すと項目が無いときに案内文を表示します。`ListItem` は左右に要素を並べる `flex` です。
 - `Input` / `Select`: HTML 標準の props と ref を受け取り、フォーカス・無効状態・ダークモードを統一します。`label` を渡すとラベル付きになり、id を自動で結び付けます(`wrapperClassName` で外枠の幅を指定)。hidden input は標準 HTML を使います。
@@ -30,6 +31,7 @@ import { Card, List, ListItem, Input, Button, Badge, TextLink } from "@/componen
 - `Icon`: 24px グリッドの線画アイコン。`path` に SVG の d 属性を渡します(装飾扱い)。
 - `PageHeader`: ページ見出しと任意の説明。
 - `Spinner`: 処理中のアイコン。
+- `NavigationProgress`: ページ遷移中に上部へ表示する NProgress のバー。ルートレイアウトに 1 つだけ置き、`@/components/ui/navigation-progress` から読み込みます。遷移開始は `instrumentation-client.ts` の `onRouterTransitionStart` から受け取り、完了は URL の変化で検知します。色は `app/globals.css` で指定しています。
 - `Toaster`: 全ページの共通通知領域。`@/components/ui/toaster` から読み込みます。通知の呼び出しは既存どおり `@/components/notifications` の `toast` を使います。
 
 基本部品には `use client` を付けず、Server / Client Component の両方から使えます。ブラウザー状態を使う部品にだけ付けてください。

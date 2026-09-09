@@ -1,5 +1,6 @@
 import { getAdminPageUser } from "@/lib/admin/access";
 import { searchUsers } from "@/lib/admin/users";
+import { kioskUserIds } from "@/lib/admin/kiosks";
 import { isRole, resolveRoles, roleLabels, type ResolvedRole, type Role } from "@/lib/admin/roles";
 import { db } from "@/prisma/db";
 import { UserSearch } from "@/components/admin/user-search";
@@ -22,12 +23,13 @@ export default async function RolesPage({ searchParams }: { searchParams: Promis
   const actor = await getAdminPageUser();
   const { q } = await searchParams;
   const query = (typeof q === "string" ? q : "").trim().slice(0, 200);
-  const [users, allUsers, teams, teamRoles] = await Promise.all([
+  const [users, allUsers, teams, teamRoles, kiosks] = await Promise.all([
     searchUsers(query),
     db.orm.public.AuthUser.select("role").all(),
     db.orm.public.AuthTeam.select("id", "name").include("organization", organization => organization.select("name"))
       .include("authTeamMembers", members => members.count()).orderBy(team => team.createdAt.desc()).all(),
     db.orm.public.TeamRole.all(),
+    kioskUserIds(),
   ]);
   const resolved = await resolveRoles(users.map(user => user.id));
   const roleOfTeam = new Map(teamRoles.map(teamRole => [teamRole.teamId, teamRole.role]));
@@ -78,7 +80,7 @@ export default async function RolesPage({ searchParams }: { searchParams: Promis
           const current = resolved.get(user.id) ?? { role: "member" as const, source: { kind: "default" as const } };
           return <ListItem key={user.id} className="flex-col items-stretch lg:flex-row lg:items-center">
             <div className="flex min-w-0 flex-wrap items-center gap-3">
-              <UserIdentity user={user} self={user.id === actor.id} />
+              <UserIdentity user={user} self={user.id === actor.id} kiosk={kiosks.has(user.id)} />
               <div className="flex items-center gap-2">
                 <Badge variant={current.role === "administrator" ? "accent" : "neutral"}>{roleLabels[current.role]}</Badge>
                 <span className="text-xs text-zinc-500">{sourceLabel(current)}</span>

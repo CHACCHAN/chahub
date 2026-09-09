@@ -15,6 +15,7 @@ import contractJson from "../prisma/contract.json";
 import { bootstrapAdministrator } from "../lib/admin/bootstrap";
 import { createAdminTeam, DuplicateTeamError } from "../lib/admin/teams";
 import { resolveRoles, setTeamRole, setUserRole, syncUserRoles } from "../lib/admin/roles";
+import { createKiosk, deleteKiosk, kioskUserIds, listKiosks, rotateKioskKey, setKioskKeyEnabled } from "../lib/admin/kiosks";
 import { db as applicationDb } from "../prisma/db";
 
 const connectionString = process.env.TEST_DATABASE_URL;
@@ -135,6 +136,30 @@ test("Prisma admin queries, team creation and administrator recovery", { skip: !
       await testAuth.api.removeTeam({ body: { teamId: remaining.id, organizationId: remaining.organizationId } });
     }
     assert.equal((await db.orm.public.AuthTeam.all()).length, 0);
+
+    // キオスク端末: 一般ユーザーとして作成し、API キーで認証する。
+    const kiosk = await createKiosk({ name: "受付タブレット", location: "1F", expiry: "never" }, { client: db, api: testAuth.api });
+    assert.equal((await users.first({ id: kiosk.userId }))?.role, "member");
+    assert.ok(await db.orm.public.Kiosk.first({ userId: kiosk.userId }));
+    assert.ok(kiosk.apiKey.startsWith("kiosk_"));
+    assert.equal(kiosk.expiresAt, null);
+    assert.equal(kiosk.header, "x-api-key");
+    assert.equal((await testAuth.api.verifyApiKey({ body: { key: kiosk.apiKey } })).valid, true);
+    assert.equal((await kioskUserIds(db)).has(kiosk.userId), true);
+    assert.equal((await listKiosks(db))[0]?.key?.status, "active");
+    await setKioskKeyEnabled(kiosk.userId, false, { client: db, api: testAuth.api });
+    assert.equal((await testAuth.api.verifyApiKey({ body: { key: kiosk.apiKey } })).valid, false);
+    assert.equal((await listKiosks(db))[0]?.key?.status, "disabled");
+    const rotated = await rotateKioskKey(kiosk.userId, "30", { client: db, api: testAuth.api });
+    assert.ok(rotated?.expiresAt);
+    assert.equal((await testAuth.api.verifyApiKey({ body: { key: kiosk.apiKey } })).valid, false);
+    assert.equal((await testAuth.api.verifyApiKey({ body: { key: rotated!.apiKey } })).valid, true);
+    assert.equal((await db.orm.public.AuthApikey.where({ referenceId: kiosk.userId }).all()).length, 1);
+    assert.equal((await listKiosks(db))[0]?.key?.status, "active");
+    assert.equal(await deleteKiosk(kiosk.userId, { client: db }), true);
+    assert.equal(await users.first({ id: kiosk.userId }), null);
+    assert.equal((await db.orm.public.AuthApikey.where({ referenceId: kiosk.userId }).all()).length, 0);
+    assert.equal(await deleteKiosk(kiosk.userId, { client: db }), false);
 
   } finally {
     await db.close(); await pool.end();

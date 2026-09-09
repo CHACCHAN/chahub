@@ -52,6 +52,8 @@ export const authOptions = {
     apiKey({
       enableSessionForAPIKeys: true,
       schema: { apikey: { modelName: "auth_apikey" } },
+      // 一覧でキーを見分けられるよう、先頭 12 文字(接頭辞込み)を保存する。
+      startingCharactersConfig: { shouldStore: true, charactersLength: 12 },
       rateLimit: { enabled: true, timeWindow: 60 * 60 * 1000, maxRequests: 1000 },
     }),
     // チームを扱う

@@ -44,6 +44,10 @@
       "model": "AuthVerification",
       "namespace": "public"
     },
+    "kiosk": {
+      "model": "Kiosk",
+      "namespace": "public"
+    },
     "oidc_team_mapping": {
       "model": "OidcTeamMapping",
       "namespace": "public"
@@ -1307,6 +1311,21 @@
                   "namespace": "public"
                 }
               },
+              "kiosk": {
+                "cardinality": "1:1",
+                "on": {
+                  "localFields": [
+                    "id"
+                  ],
+                  "targetFields": [
+                    "userId"
+                  ]
+                },
+                "to": {
+                  "model": "Kiosk",
+                  "namespace": "public"
+                }
+              },
               "roleOverride": {
                 "cardinality": "1:1",
                 "on": {
@@ -1432,6 +1451,83 @@
               },
               "namespaceId": "public",
               "table": "auth_verification"
+            }
+          },
+          "Kiosk": {
+            "fields": {
+              "createdAt": {
+                "nullable": false,
+                "type": {
+                  "codecId": "pg/timestamptz-string@1",
+                  "kind": "scalar"
+                }
+              },
+              "location": {
+                "nullable": true,
+                "type": {
+                  "codecId": "pg/text@1",
+                  "kind": "scalar"
+                }
+              },
+              "note": {
+                "nullable": true,
+                "type": {
+                  "codecId": "pg/text@1",
+                  "kind": "scalar"
+                }
+              },
+              "updatedAt": {
+                "nullable": false,
+                "type": {
+                  "codecId": "pg/timestamptz-string@1",
+                  "kind": "scalar"
+                }
+              },
+              "userId": {
+                "nullable": false,
+                "type": {
+                  "codecId": "pg/text@1",
+                  "kind": "scalar"
+                }
+              }
+            },
+            "relations": {
+              "user": {
+                "cardinality": "N:1",
+                "on": {
+                  "localFields": [
+                    "userId"
+                  ],
+                  "targetFields": [
+                    "id"
+                  ]
+                },
+                "to": {
+                  "model": "AuthUser",
+                  "namespace": "public"
+                }
+              }
+            },
+            "storage": {
+              "fields": {
+                "createdAt": {
+                  "column": "createdAt"
+                },
+                "location": {
+                  "column": "location"
+                },
+                "note": {
+                  "column": "note"
+                },
+                "updatedAt": {
+                  "column": "updatedAt"
+                },
+                "userId": {
+                  "column": "userId"
+                }
+              },
+              "namespaceId": "public",
+              "table": "kiosk"
             }
           },
           "OidcTeamMapping": {
@@ -2551,6 +2647,61 @@
               },
               "uniques": []
             },
+            "kiosk": {
+              "columns": {
+                "createdAt": {
+                  "codecId": "pg/timestamptz-string@1",
+                  "nativeType": "timestamptz",
+                  "nullable": false
+                },
+                "location": {
+                  "codecId": "pg/text@1",
+                  "nativeType": "text",
+                  "nullable": true
+                },
+                "note": {
+                  "codecId": "pg/text@1",
+                  "nativeType": "text",
+                  "nullable": true
+                },
+                "updatedAt": {
+                  "codecId": "pg/timestamptz-string@1",
+                  "nativeType": "timestamptz",
+                  "nullable": false
+                },
+                "userId": {
+                  "codecId": "pg/text@1",
+                  "nativeType": "text",
+                  "nullable": false
+                }
+              },
+              "foreignKeys": [
+                {
+                  "onDelete": "cascade",
+                  "source": {
+                    "columns": [
+                      "userId"
+                    ],
+                    "namespaceId": "public",
+                    "tableName": "kiosk"
+                  },
+                  "target": {
+                    "columns": [
+                      "id"
+                    ],
+                    "namespaceId": "public",
+                    "tableName": "auth_user"
+                  }
+                }
+              ],
+              "indexes": [],
+              "primaryKey": {
+                "columns": [
+                  "userId"
+                ]
+              },
+              "uniques": []
+            },
             "oidc_team_mapping": {
               "columns": {
                 "groupName": {
@@ -2708,7 +2859,7 @@
         "kind": "postgres-schema"
       }
     },
-    "storageHash": "1a553cc4ee034effe96bcef7b77f4c6c262dd35fb38a7c1e51b44d92ad57c35d"
+    "storageHash": "a1b65f1f82c4d79692473098439e04efd8a3ecfe8815c4baa6f735f842eab4f1"
   },
   "capabilities": {
     "postgres": {

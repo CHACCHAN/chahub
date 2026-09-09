@@ -1,6 +1,8 @@
 import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
+import { Suspense } from "react";
 import { Toaster } from "@/components/notifications";
+import { NavigationProgress } from "@/components/ui/navigation-progress";
 import "./globals.css";
 
 const geistSans = Geist({
@@ -24,7 +26,11 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
       lang="en"
       className={`${geistSans.variable} ${geistMono.variable}`}
     >
-      <body>{children}<Toaster /></body>
+      <body>
+        <Suspense fallback={null}><NavigationProgress /></Suspense>
+        {children}
+        <Toaster />
+      </body>
     </html>
   );
 }

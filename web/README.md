@@ -9,7 +9,7 @@ Prisma Next は Better Auth の Prisma アダプターと互換性がないた�
 
 contract を編集したら `bun run contract:emit` で型と JSON を更新してください。emit は DB のテーブルを変更しません。認証スキーマの更新後は contract も追従させてください。日時は PostgreSQL の型を維持した `TimestamptzString` で扱います。ORM に専用 API がないテーブルロックだけは、Prisma の raw lane を同じトランザクション内で使用しています。
 
-キオスク用キーは信頼できるサーバー上で `bun run auth:kiosk-key <auth_user.id>` を実行して発行します。OIDC ログイン済みユーザーの認証用 ID を指定してください。キーの有効期間は30日で、表示は発行時のみです。`/kiosk-login` に入力すると HttpOnly / SameSite=Strict Cookie（本番では Secure）に保存され、各リクエストで検証されます。端末から `x-api-key` ヘッダーを送る方法にも対応します。ログアウトは端末の Cookie を削除しますが、キー自体は失効しません。
+キオスク端末(Android タブレット + Tauri)は管理画面の `/admin/kiosks` から追加します。端末ごとに通常のユーザー(ロールは `member`、メールは `kiosk-xxxxxxxx@kiosk.chahub.invalid`)と Better Auth API Key プラグインのキー(接頭辞 `kiosk_`)を発行し、作成直後にだけ表示されるサーバー URL・端末 ID・API キー・LiveKit URL を `.env` / JSON 形式でコピーして Tauri アプリのビルド時に埋め込みます。端末は `x-api-key` ヘッダーでキーを送り、各リクエストで検証されます。キーの有効期限は無期限(既定)/ 1年 / 90日 / 30日から選べ、管理画面から無効化・再発行・削除できます。CLI の `bun run auth:kiosk-key <auth_user.id>` は既存ユーザーに 30 日キーを発行する補助コマンドとして残しています。
 
 主要ページは `app/(protected)/` に配置してください。共通レイアウトで未認証アクセスを `/login` に転送します。ページのデータ取得や Server Action では `requireSession()`、API Route Handler では `getSession()` を呼び、未認証時に 401 を返してください。レイアウトだけでは API や Server Action は保護されません。`(public)` はログイン関連のページのみです。
 
@@ -58,6 +58,7 @@ Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/bui
 - `/admin/teams`: チームの作成・削除・一覧
 - `/admin/users`: 登録ユーザーと現在のロールの確認
 - `/admin/roles`: Better Auth のロール（一般ユーザー `member` / 管理者 `administrator`）をチームごと・ユーザーごとに設定
+- `/admin/kiosks`: キオスク端末(アカウント + API キー)の追加・無効化・再発行・削除
 - `/admin/livekit`: LiveKit サーバーの接続状況（HTTP 到達性・API 認証・応答時間）、環境変数の設定状態、開かれているルームと参加者の一覧
 
 すべての管理ページで管理者権限を確認します。
@@ -75,6 +76,15 @@ Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/bui
 
 初期設定の統合テストは `TEST_DATABASE_URL=... bun test tests/admin-bootstrap.test.ts` で実行できます。テスト用の独立した DB を作成し、終了時に削除します。接続ユーザーには DB 作成権限が必要です。管理者復帰、同時チーム作成、関連データと人数の集計を実 DB と ORM で検証します。
 
+## キオスク端末
+
+`/admin/kiosks` の処理は `lib/admin/kiosks.ts` にあります。
+
+- 追加: `auth_user`(`member`)と `kiosk` 行(設置場所・メモ)をトランザクションで作成し、`auth.api.createApiKey` を `userId` 付きのサーバー呼び出しで実行してキーを発行します。キー発行に失敗した場合はユーザーを削除して取り消します。
+- 表示: 作成・再発行の直後にだけ生のキーを含むビルド情報(`CHAHUB_SERVER_URL` / `CHAHUB_KIOSK_ID` / `CHAHUB_KIOSK_NAME` / `CHAHUB_API_KEY_HEADER` / `CHAHUB_API_KEY` / `CHAHUB_LIVEKIT_URL`)を表示します。生のキーは保存しません。一覧では先頭 12 文字・状態(有効 / 無効 / 期限切れ / キーなし)・有効期限・最終アクセス・リクエスト数を表示します。
+- 無効化 / 有効化: `auth.api.updateApiKey` を `userId` 付きで呼びます。再発行: 新しいキーを発行してから旧キーを削除します。削除: API キーの削除(`auth_apikey` は FK を持たないため Prisma で削除)の後にユーザーを削除し、`kiosk` 行・セッション・所属は CASCADE で消えます。
+- 端末アカウントは通常ユーザーと同じ扱いで、ユーザー一覧とロール・権限に「キオスク」の印付きで表示されます。API キー付きのリクエストでは管理画面を操作できません。
+
 ## LiveKit の接続状況
 
 `/admin/livekit` は `lib/livekit/status.ts` の `getLiveKitStatus()` でサーバーに問い合わせます。
@@ -83,6 +93,10 @@ Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/bui
 - `livekit-server-sdk` の `LiveKitAPI` で `listRooms` を呼び、API キー・シークレットの認証と応答時間を確認します。成功した場合は各ルームの `listParticipants` も取得し、参加者の状態・種別・トラック数・参加時刻を表示します（参加者の詳細取得は先頭20ルームまで）。
 - いずれも 5 秒でタイムアウトします。API キーは先頭と末尾のみ表示し、シークレットは設定済みかどうかだけを表示します。
 - ページは毎回サーバーに問い合わせます。「再読み込み」ボタンで再取得できます。ダッシュボードの LiveKit カードは他のカードを待たせないよう Suspense でストリーミングします。
+
+## ページ遷移のプログレスバー
+
+ページ移動中に固まったと誤解されないよう、画面上部に [NProgress](https://github.com/rstacruz/nprogress) のバーを表示します。`instrumentation-client.ts` の `onRouterTransitionStart`(Next.js の App Router 遷移フック)が遷移開始を `chahub:navigation-start` イベントで通知し、ルートレイアウトの `NavigationProgress` が `NProgress.start()` を呼びます。完了は `usePathname` / `useSearchParams` の変化で検知して `NProgress.done()` します。同じ URL への移動では表示せず、15 秒以内に完了を検知できない場合は自動で終了します。スタイルは `app/globals.css` の `#nprogress` にあり、ダークモードと `prefers-reduced-motion` に対応します。
 
 ## 共通トースト通知
 

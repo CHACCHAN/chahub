@@ -19,6 +19,7 @@ model AuthUser {
   authSessions    AuthSession[]
   authTeamMembers AuthTeamMember[]
   roleOverride    UserRoleOverride?
+  kiosk           Kiosk?
 
   @@control(external)
   @@map("auth_user")
@@ -218,4 +219,16 @@ model UserRoleOverride {
   user      AuthUser          @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@map("user_role_override")
+}
+
+// キオスク端末。通常のユーザー(auth_user、ロールは member)として管理し、API キーで認証する。
+model Kiosk {
+  userId    String            @id
+  location  String?
+  note      String?
+  createdAt TimestamptzString
+  updatedAt TimestamptzString
+  user      AuthUser          @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("kiosk")
 }

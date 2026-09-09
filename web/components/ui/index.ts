@@ -1,5 +1,6 @@
 export { Button, type ButtonProps } from "./button";
 export { TextLink } from "./text-link";
+export { CopyButton } from "./copy-button";
 export { Card, CardLink } from "./card";
 export { List, ListItem } from "./list";
 export { Input } from "./input";
