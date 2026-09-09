@@ -1,5 +1,6 @@
 import { getSession } from "@/lib/better-auth/session";
 import { LogoutButton } from "@/components/auth";
+import { ThemeToggle } from "@/components/ui";
 import { redirect } from "next/navigation";
 
 export default async function ProtectedLayout({
@@ -10,7 +11,7 @@ export default async function ProtectedLayout({
   if (!await getSession()) redirect("/login");
 
   return <>
-    <header className="flex justify-end p-4"><LogoutButton /></header>
+    <header className="flex items-center justify-end gap-3 p-4"><ThemeToggle /><LogoutButton /></header>
     {children}
   </>;
 }

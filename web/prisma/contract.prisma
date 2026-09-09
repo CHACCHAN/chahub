@@ -191,13 +191,16 @@ model AuthVerification {
 }
 
 // Application-managed rules; authentication tables above remain Better Auth-owned.
+// teamId(実チーム)か role(標準チーム = Administrator / Member)のどちらか一方を指す。
 model OidcTeamMapping {
-  id        String @id
+  id        String    @id
   groupName String
-  teamId    String
-  team      AuthTeam @relation(fields: [teamId], references: [id], onDelete: Cascade)
+  teamId    String?
+  role      String?
+  team      AuthTeam? @relation(fields: [teamId], references: [id], onDelete: Cascade)
 
   @@unique([groupName, teamId])
+  @@unique([groupName, role])
   @@map("oidc_team_mapping")
 }
 
@@ -211,10 +214,11 @@ model TeamRole {
   @@map("team_role")
 }
 
-// ユーザー単位のロール指定。チームの設定より優先する。
+// ユーザー単位のロール指定。チームの設定より優先する。source は admin(画面・CLI)か oidc(OIDC グループの標準チーム割り当て)。
 model UserRoleOverride {
   userId    String            @id
   role      String
+  source    String            @default("admin")
   updatedAt TimestamptzString
   user      AuthUser          @relation(fields: [userId], references: [id], onDelete: Cascade)
 

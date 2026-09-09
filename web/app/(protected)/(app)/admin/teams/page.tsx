@@ -3,6 +3,8 @@ import { getAdminPageUser } from "@/lib/admin/access";
 import { db } from "@/prisma/db";
 import { CreateTeamForm, DeleteTeamForm } from "@/components/admin/forms";
 import { PageHeader, Card, Badge, List, ListItem, TextLink } from "@/components/ui";
+import { STANDARD_TEAM_NAMES } from "@/lib/admin/oidc-mapping";
+import { isRole } from "@/lib/admin/roles";
 
 export default async function TeamsPage() {
   await getAdminPageUser();
@@ -26,12 +28,11 @@ export default async function TeamsPage() {
       <CreateTeamForm />
     </Card>
     <Card as="section" title="OIDC グループの自動マッピング" className="mb-6"
-      description="ログイン時、グループ名が完全一致するユーザーを指定チームに追加します。管理者権限や既存の所属は変更しません。">
-      {!teams.length && <p className="mb-4 text-sm text-zinc-500">まず所属先のチームを作成してください。</p>}
+      description="ログイン時、グループ名が完全一致するユーザーを指定チームに追加します。標準チーム(Administrator / Member)を選ぶと、そのユーザーのロールを OIDC 由来の指定として設定します(管理者が画面で指定したロールは上書きしません)。既存の所属は変更しません。">
       <OidcMappingForm teams={teams.map(team => ({id: team.id, name: team.name, organization: team.organization?.name ?? ""}))} />
       <List className="mt-5" empty="マッピングはまだ設定されていません。">
         {mappings.map(rule => <ListItem key={rule.id} className="px-0 py-3">
-          <p className="min-w-0 break-words text-sm"><span className="font-medium">{rule.groupName}</span><span className="mx-2 text-zinc-400" aria-hidden="true">→</span>{rule.team?.name}</p>
+          <p className="min-w-0 break-words text-sm"><span className="font-medium">{rule.groupName}</span><span className="mx-2 text-zinc-400" aria-hidden="true">→</span>{rule.team?.name ?? (isRole(rule.role) ? STANDARD_TEAM_NAMES[rule.role] : "(削除済み)")}{isRole(rule.role) && <Badge variant="accent" className="ml-2">標準</Badge>}</p>
           <RemoveOidcMapping id={rule.id} />
         </ListItem>)}
       </List>

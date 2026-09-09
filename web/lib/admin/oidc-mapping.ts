@@ -1,6 +1,9 @@
 import { createHash } from "node:crypto";
 import { db } from "@/prisma/db";
-import { applyRoles } from "./roles";
+import { applyRoles, isRole, type Role } from "./roles";
+
+/** 標準チーム(ロール)の表示名。 */
+export const STANDARD_TEAM_NAMES: Record<Role, string> = { administrator: "Administrator", member: "Member" };
 
 // Add matching memberships only; existing/manual memberships are retained.
 export async function applyOidcTeamMappings(userId: string, groups: string[], client = db) {
@@ -30,7 +33,17 @@ export async function applyOidcTeamMappings(userId: string, groups: string[], cl
         .aggregate(aggregate => ({ count: aggregate.count() }));
       await tx.orm.public.AuthTeam.where({ id: team.id }).update({ memberCount: counts.count });
     }
-    // 新しい所属チームにロールが設定されていれば反映する。
+    // 標準チーム(Administrator / Member)への割り当ては、OIDC 由来のユーザー単位ロール指定として保存する。
+    // 管理者が画面や CLI で指定したロール(source = admin)は上書きしない。
+    const roles = rules.map(rule => rule.role).filter(isRole);
+    if (roles.length) {
+      const role: Role = roles.includes("administrator") ? "administrator" : "member";
+      const existing = await tx.orm.public.UserRoleOverride.first({ userId });
+      const updatedAt = new Date().toISOString();
+      if (!existing) await tx.orm.public.UserRoleOverride.create({ userId, role, source: "oidc", updatedAt });
+      else if (existing.source === "oidc" && existing.role !== role) await tx.orm.public.UserRoleOverride.where({ userId }).update({ role, updatedAt });
+    }
+    // 新しい所属チームや標準チームの割り当てを auth_user.role に反映する。
     await applyRoles([userId], tx);
   });
 }

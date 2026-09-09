@@ -14,7 +14,7 @@ const roles = [
 ];
 
 function sourceLabel(resolved: ResolvedRole) {
-  if (resolved.source.kind === "user") return "ユーザー単位の指定";
+  if (resolved.source.kind === "user") return resolved.source.via === "oidc" ? "OIDC グループからの指定" : "ユーザー単位の指定";
   if (resolved.source.kind === "team") return `チーム「${resolved.source.teamName}」の設定`;
   return "既定";
 }

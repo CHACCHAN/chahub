@@ -1,5 +1,8 @@
 @import "tailwindcss";
 
+/* テーマは next-themes が <html class="dark"> を付け外しして切り替える(components/ui/theme-provider.tsx)。 */
+@custom-variant dark (&:where(.dark, .dark *));
+
 :root {
   --background: #ffffff;
   --foreground: #171717;
@@ -12,11 +15,9 @@
   --font-mono: var(--font-geist-mono);
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
+.dark {
+  --background: #0a0a0a;
+  --foreground: #ededed;
 }
 
 body {
@@ -48,13 +49,11 @@ body {
   opacity: 1;
   transform: rotate(3deg) translate(0, -4px);
 }
-@media (prefers-color-scheme: dark) {
-  #nprogress .bar {
-    background: #818cf8;
-  }
-  #nprogress .peg {
-    box-shadow: 0 0 10px #818cf8, 0 0 5px #818cf8;
-  }
+.dark #nprogress .bar {
+  background: #818cf8;
+}
+.dark #nprogress .peg {
+  box-shadow: 0 0 10px #818cf8, 0 0 5px #818cf8;
 }
 @media (prefers-reduced-motion: reduce) {
   #nprogress .peg {

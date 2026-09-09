@@ -19,11 +19,17 @@ export function OidcMappingForm({ teams }: { teams: { id: string; name: string; 
   const [, action, pending] = useMappingAction(addOidcMapping);
   return <form action={action} className="grid gap-3 lg:grid-cols-[1fr_1fr_auto] lg:items-end">
     <Input label="OIDC グループ名" name="groupName" required maxLength={200} placeholder="例：engineering" />
-    <Select label="所属先チーム" name="teamId" required defaultValue="">
+    <Select label="所属先チーム" name="target" required defaultValue="">
       <option value="" disabled>チームを選択</option>
-      {teams.map(team => <option key={team.id} value={team.id}>{team.organization} / {team.name}</option>)}
+      <optgroup label="標準チーム(ロール)">
+        <option value="role:administrator">Administrator(管理者になる)</option>
+        <option value="role:member">Member(一般ユーザーになる)</option>
+      </optgroup>
+      {teams.length > 0 && <optgroup label="チーム">
+        {teams.map(team => <option key={team.id} value={`team:${team.id}`}>{team.organization} / {team.name}</option>)}
+      </optgroup>}
     </Select>
-    <Button type="submit" pending={pending} pendingLabel="保存中…" disabled={!teams.length}>マッピングを追加</Button>
+    <Button type="submit" pending={pending} pendingLabel="保存中…">マッピングを追加</Button>
   </form>;
 }
 

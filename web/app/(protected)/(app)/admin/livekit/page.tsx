@@ -1,7 +1,7 @@
 import { getAdminPageUser } from "@/lib/admin/access";
 import { getLiveKitStatus, type LiveKitCheck, type LiveKitRoom } from "@/lib/livekit/status";
 import { RefreshButton } from "@/components/admin/refresh-button";
-import { PageHeader, Card, Badge, List, ListItem } from "@/components/ui";
+import { PageHeader, Card, Badge, List, ListItem, Notice } from "@/components/ui";
 
 const time = new Intl.DateTimeFormat("ja-JP", { dateStyle: "medium", timeStyle: "medium", timeZone: "Asia/Tokyo" });
 const format = (iso: string | null) => iso ? time.format(new Date(iso)) : "—";
@@ -67,9 +67,9 @@ export default async function LiveKitPage() {
       <p className="text-sm text-zinc-500">最終確認: {format(status.checkedAt)}</p>
       <RefreshButton />
     </div>
-    {!status.config.configured && <Card className="mb-6 border-amber-200 bg-amber-50 p-5 text-sm leading-6 text-amber-900 dark:border-amber-900 dark:bg-amber-950 dark:text-amber-200">
-      LiveKit の接続設定が不足しています。<code className="font-mono">LIVEKIT_URL</code>、<code className="font-mono">LIVEKIT_API_KEY</code>、<code className="font-mono">LIVEKIT_API_SECRET</code> を <code className="font-mono">.env</code> に設定し、開発サーバーを再起動してください。
-    </Card>}
+    {!status.config.configured && <Notice variant="warning" className="mb-6" title="LiveKit の接続設定が不足しています">
+      <code className="font-mono">LIVEKIT_URL</code>、<code className="font-mono">LIVEKIT_API_KEY</code>、<code className="font-mono">LIVEKIT_API_SECRET</code> を <code className="font-mono">.env</code> に設定し、開発サーバーを再起動してください。
+    </Notice>}
     <section aria-label="接続状況" className="mb-6 grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
       <CheckCard title="HTTP 到達性" check={status.http} />
       <CheckCard title="API 認証" check={status.api} />

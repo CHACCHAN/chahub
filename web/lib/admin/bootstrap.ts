@@ -13,7 +13,7 @@ export async function bootstrapAdministrator(client: typeof db, userId: string) 
     const updatedAt = new Date().toISOString();
     await tx.orm.public.AuthUser.where({ id: userId }).update({ role: "administrator", updatedAt });
     // ユーザー単位の指定として残し、チーム設定の同期で降格しないようにする。
-    await tx.orm.public.UserRoleOverride.upsert({ create: { userId, role: "administrator", updatedAt }, update: { role: "administrator", updatedAt } });
+    await tx.orm.public.UserRoleOverride.upsert({ create: { userId, role: "administrator", source: "admin", updatedAt }, update: { role: "administrator", source: "admin", updatedAt } });
     return true;
   });
 }

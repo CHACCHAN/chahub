@@ -1546,8 +1546,15 @@
                   "kind": "scalar"
                 }
               },
+              "role": {
+                "nullable": true,
+                "type": {
+                  "codecId": "pg/text@1",
+                  "kind": "scalar"
+                }
+              },
               "teamId": {
-                "nullable": false,
+                "nullable": true,
                 "type": {
                   "codecId": "pg/text@1",
                   "kind": "scalar"
@@ -1578,6 +1585,9 @@
                 },
                 "id": {
                   "column": "id"
+                },
+                "role": {
+                  "column": "role"
                 },
                 "teamId": {
                   "column": "teamId"
@@ -1653,6 +1663,13 @@
                   "kind": "scalar"
                 }
               },
+              "source": {
+                "nullable": false,
+                "type": {
+                  "codecId": "pg/text@1",
+                  "kind": "scalar"
+                }
+              },
               "updatedAt": {
                 "nullable": false,
                 "type": {
@@ -1689,6 +1706,9 @@
               "fields": {
                 "role": {
                   "column": "role"
+                },
+                "source": {
+                  "column": "source"
                 },
                 "updatedAt": {
                   "column": "updatedAt"
@@ -2714,10 +2734,15 @@
                   "nativeType": "text",
                   "nullable": false
                 },
+                "role": {
+                  "codecId": "pg/text@1",
+                  "nativeType": "text",
+                  "nullable": true
+                },
                 "teamId": {
                   "codecId": "pg/text@1",
                   "nativeType": "text",
-                  "nullable": false
+                  "nullable": true
                 }
               },
               "foreignKeys": [
@@ -2759,6 +2784,12 @@
                   "columns": [
                     "groupName",
                     "teamId"
+                  ]
+                },
+                {
+                  "columns": [
+                    "groupName",
+                    "role"
                   ]
                 }
               ]
@@ -2815,6 +2846,15 @@
                   "nativeType": "text",
                   "nullable": false
                 },
+                "source": {
+                  "codecId": "pg/text@1",
+                  "default": {
+                    "kind": "literal",
+                    "value": "admin"
+                  },
+                  "nativeType": "text",
+                  "nullable": false
+                },
                 "updatedAt": {
                   "codecId": "pg/timestamptz-string@1",
                   "nativeType": "timestamptz",
@@ -2859,7 +2899,7 @@
         "kind": "postgres-schema"
       }
     },
-    "storageHash": "a1b65f1f82c4d79692473098439e04efd8a3ecfe8815c4baa6f735f842eab4f1"
+    "storageHash": "aa1324efb380e2a1cc334fe8e08a26790d755913b33508379d454ae83bc5a04f"
   },
   "capabilities": {
     "postgres": {

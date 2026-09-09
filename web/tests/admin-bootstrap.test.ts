@@ -27,6 +27,8 @@ test("Prisma admin queries, team creation and administrator recovery", { skip: !
   url.pathname = `/${database}`;
   const pool = new Pool({ connectionString: url.toString() });
   const db = postgres<Contract>({ contractJson, url: url.toString() });
+  // headers を渡さないサーバー呼び出し(removeTeam・権限チェックなど)に使う、素の Better Auth インスタンス。
+  const testAuth = betterAuth({ ...authOptions, database: pool });
   try {
     await control.query(`CREATE DATABASE "${database}"`);
     await (await getMigrations({ ...authOptions, database: pool })).runMigrations();
@@ -105,9 +107,21 @@ test("Prisma admin queries, team creation and administrator recovery", { skip: !
     assert.equal((await users.first({ id: "later" }))?.role, "administrator");
     assert.equal((await users.first({ id: "banned" }))?.role, "member");
     assert.equal((await resolveRoles(["later"], db)).get("later")?.source.kind, "team");
+
+    // 回帰テスト: 「一般アカウント兼管理者」(チーム経由で管理者権限を持つ通常ユーザー)が、
+    // requireAdmin() が実際に使う権限チェック(auth.api.userHasPermission, user:set-role)を通過できること。
+    // role を直接渡す呼び出しはヘッダー/セッション不要で、Better Auth 側の has-permission ロジック単体を検証できる。
+    // 実行時のスキーマは任意の文字列(カンマ区切り含む)を受け付けるが、静的型は roles の定義から絞られるため as で通す。
+    const canSetRole = (role: string) => testAuth.api.userHasPermission({ body: { role: role as "administrator", permissions: { user: ["set-role"] } } });
+    assert.equal((await canSetRole((await users.first({ id: "first" }))!.role!)).success, true);
+    assert.equal((await canSetRole((await users.first({ id: "banned" }))!.role!)).success, false);
+    // 移行前の複数ロール形式(カンマ区切り)でも、順序に関わらず管理者権限を認識できること。
+    assert.equal((await canSetRole("member,administrator")).success, true);
+    assert.equal((await canSetRole("administrator,member")).success, true);
+    assert.equal((await canSetRole("member")).success, false);
     await setUserRole("later", "member", db);
     assert.equal((await users.first({ id: "later" }))?.role, "member");
-    assert.deepEqual((await resolveRoles(["later"], db)).get("later"), { role: "member", source: { kind: "user" } });
+    assert.deepEqual((await resolveRoles(["later"], db)).get("later"), { role: "member", source: { kind: "user", via: "admin" } });
     await user("oidc");
     await applyOidcTeamMappings("oidc", ["engineering"], db);
     assert.equal((await users.first({ id: "oidc" }))?.role, "administrator");
@@ -120,8 +134,21 @@ test("Prisma admin queries, team creation and administrator recovery", { skip: !
     await setTeamRole(team.id, "administrator", db);
     assert.equal((await users.first({ id: "later" }))?.role, "administrator");
 
+    // 標準チーム(ロール)への OIDC マッピング。OIDC 由来の指定は更新するが、管理者の指定は上書きしない。
+    await db.orm.public.OidcTeamMapping.create({ id: "mapping-admin", groupName: "admins", role: "administrator", teamId: null });
+    await db.orm.public.OidcTeamMapping.create({ id: "mapping-member", groupName: "guests", role: "member", teamId: null });
+    await user("sso");
+    await applyOidcTeamMappings("sso", ["guests", "admins"], db);
+    assert.equal((await users.first({ id: "sso" }))?.role, "administrator");
+    assert.deepEqual((await resolveRoles(["sso"], db)).get("sso")?.source, { kind: "user", via: "oidc" });
+    await applyOidcTeamMappings("sso", ["guests"], db);
+    assert.equal((await users.first({ id: "sso" }))?.role, "member");
+    await setUserRole("sso", "administrator", db);
+    await applyOidcTeamMappings("sso", ["guests"], db);
+    assert.equal((await users.first({ id: "sso" }))?.role, "administrator");
+    assert.deepEqual((await resolveRoles(["sso"], db)).get("sso")?.source, { kind: "user", via: "admin" });
+
     // headers を渡さないサーバー呼び出しでチームを削除し、所属とマッピングも消えることを確認する。
-    const testAuth = betterAuth({ ...authOptions, database: pool });
     await testAuth.api.removeTeam({ body: { teamId: team.id, organizationId: (await db.orm.public.AuthTeam.first({ id: team.id }))!.organizationId } });
     assert.equal(await db.orm.public.AuthTeam.first({ id: team.id }), null);
     assert.equal((await db.orm.public.AuthTeamMember.where({ teamId: team.id }).all()).length, 0);

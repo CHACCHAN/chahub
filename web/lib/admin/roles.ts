@@ -8,8 +8,9 @@ export function isRole(value: unknown): value is Role {
   return ROLES.includes(value as Role);
 }
 
+export type OverrideSource = "admin" | "oidc";
 export type RoleSource =
-  | { kind: "user" }
+  | { kind: "user"; via: OverrideSource }
   | { kind: "team"; teamId: string; teamName: string }
   | { kind: "default" };
 export type ResolvedRole = { role: Role; source: RoleSource };
@@ -30,7 +31,7 @@ export async function resolveRoles(userIds: string[], client: Client = db): Prom
   const byTeam = new Map(teamRoles.map(teamRole => [teamRole.teamId, teamRole]));
   for (const userId of userIds) {
     const override = overrides.find(candidate => candidate.userId === userId);
-    if (override && isRole(override.role)) { resolved.set(userId, { role: override.role, source: { kind: "user" } }); continue; }
+    if (override && isRole(override.role)) { resolved.set(userId, { role: override.role, source: { kind: "user", via: override.source === "oidc" ? "oidc" : "admin" } }); continue; }
     const granted = memberships.filter(member => member.userId === userId)
       .flatMap(member => { const teamRole = byTeam.get(member.teamId); return teamRole && isRole(teamRole.role) ? [teamRole] : []; });
     const winner = granted.find(teamRole => teamRole.role === "administrator") ?? granted[0];
@@ -85,7 +86,7 @@ export async function setUserRole(userId: string, role: Role | null, client = db
   await client.transaction(async tx => {
     await tx.execute(lock(client));
     const updatedAt = new Date().toISOString();
-    if (role) await tx.orm.public.UserRoleOverride.upsert({ create: { userId, role, updatedAt }, update: { role, updatedAt } });
+    if (role) await tx.orm.public.UserRoleOverride.upsert({ create: { userId, role, source: "admin", updatedAt }, update: { role, source: "admin", updatedAt } });
     else await tx.orm.public.UserRoleOverride.where({ userId }).delete();
     await applyRoles([userId], tx);
   });
