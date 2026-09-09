@@ -1,0 +1,145 @@
+import { execFile } from "node:child_process";
+import { promisify } from "node:util";
+import { searchUsers } from "../lib/admin/users";
+import { applyOidcTeamMappings } from "../lib/admin/oidc-mapping";
+import { captureOidcGroups, getOidcGroups, withOidcContext } from "../lib/better-auth/oidc-context";
+import { test } from "node:test";
+import assert from "node:assert/strict";
+import { Pool } from "pg";
+import postgres from "@prisma/orm-postgres/runtime";
+import { getMigrations } from "better-auth/db/migration";
+import { betterAuth } from "better-auth";
+import { authOptions, authPool } from "../lib/better-auth/config";
+import type { Contract } from "../prisma/contract.d";
+import contractJson from "../prisma/contract.json";
+import { bootstrapAdministrator } from "../lib/admin/bootstrap";
+import { createAdminTeam, DuplicateTeamError } from "../lib/admin/teams";
+import { resolveRoles, setTeamRole, setUserRole, syncUserRoles } from "../lib/admin/roles";
+import { db as applicationDb } from "../prisma/db";
+
+const connectionString = process.env.TEST_DATABASE_URL;
+
+test("Prisma admin queries, team creation and administrator recovery", { skip: !connectionString }, async () => {
+  const database = `admin_test_${crypto.randomUUID().replaceAll("-", "")}`;
+  const control = new Pool({ connectionString });
+  const url = new URL(connectionString!);
+  url.pathname = `/${database}`;
+  const pool = new Pool({ connectionString: url.toString() });
+  const db = postgres<Contract>({ contractJson, url: url.toString() });
+  try {
+    await control.query(`CREATE DATABASE "${database}"`);
+    await (await getMigrations({ ...authOptions, database: pool })).runMigrations();
+    await pool.query("ALTER TABLE auth_user ALTER COLUMN banned SET DEFAULT false");
+    await promisify(execFile)("bun", ["prisma", "db", "update"], { env: { ...process.env, DATABASE_URL: url.toString() } });
+    const users = db.orm.public.AuthUser;
+    async function user(id: string, banned = false) {
+      return users.create({ id, name: id, email: `${id}@example.invalid`, emailVerified: true, role: "member", banned });
+    }
+    await user("first"); await user("second"); await user("banned", true);
+    assert.equal(await bootstrapAdministrator(db, "missing"), false);
+    assert.equal(await bootstrapAdministrator(db, "banned"), false);
+    const results = await Promise.all([bootstrapAdministrator(db, "first"), bootstrapAdministrator(db, "second")]);
+    assert.equal(results.filter(Boolean).length, 1);
+    assert.equal((await users.where({ role: "administrator" }).all()).length, 1);
+    assert.equal((await db.orm.public.UserRoleOverride.all()).length, 1);
+    assert.equal(await bootstrapAdministrator(db, "second"), false);
+    for (const current of await users.all()) await users.where({ id: current.id }).update({ role: "member" });
+    assert.equal(await bootstrapAdministrator(db, "second"), true);
+    assert.equal(await bootstrapAdministrator(db, "first"), false);
+    await users.where({ id: "second" }).delete();
+    assert.equal(await bootstrapAdministrator(db, "first"), true);
+    await users.where({ id: "first" }).update({ role: "member,administrator" });
+    await user("later");
+    assert.equal(await bootstrapAdministrator(db, "later"), false);
+
+    const teams = await Promise.allSettled([createAdminTeam("Example", db), createAdminTeam("EXAMPLE", db)]);
+    assert.equal(teams.filter(result => result.status === "fulfilled").length, 1);
+    const rejected = teams.find(result => result.status === "rejected");
+    assert.ok(rejected?.status === "rejected" && rejected.reason instanceof DuplicateTeamError);
+    await createAdminTeam("100%_team", db);
+    await createAdminTeam("100xxteam", db);
+    await assert.rejects(createAdminTeam("100%_team", db), DuplicateTeamError);
+    const listed = await db.orm.public.AuthTeam
+      .select("id", "name")
+      .include("organization", organization => organization.select("name"))
+      .include("authTeamMembers", members => members.count())
+      .orderBy(team => team.createdAt.desc()).all();
+    assert.equal(listed.length, 3);
+    assert.equal(listed[0].organization?.name, "ChaHub");
+    assert.equal(listed[0].authTeamMembers, 0);
+    const team = listed[0];
+    await db.orm.public.AuthTeamMember.create({ id: crypto.randomUUID(), teamId: team.id, userId: "first" });
+    const withMember = await db.orm.public.AuthTeam.where({ id: team.id })
+      .include("authTeamMembers", members => members.count()).first();
+    assert.equal(withMember?.authTeamMembers, 1);
+    await users.where({ id: "later" }).update({ name: "Example%_Name", email: "find-me@example.invalid" });
+    assert.equal((await searchUsers("EXAMPLE%_", db)).length, 1);
+    assert.equal((await searchUsers("find-me@", db))[0].id, "later");
+    assert.equal((await searchUsers("no-match", db)).length, 0);
+    await db.orm.public.OidcTeamMapping.create({ id: "mapping", groupName: "engineering", teamId: team.id });
+    await Promise.all([applyOidcTeamMappings("later", ["engineering"], db), applyOidcTeamMappings("later", ["engineering"], db)]);
+    const memberships = await db.orm.public.AuthTeamMember.where({ userId: "later", teamId: team.id }).all();
+    assert.equal(memberships.length, 1);
+    assert.equal((await db.orm.public.AuthTeam.first({ id: team.id }))?.memberCount, 2);
+    assert.equal((await db.orm.public.AuthMember.where({ userId: "later" }).all()).length, 1);
+    assert.equal((await users.first({ id: "later" }))?.role, "member");
+    await applyOidcTeamMappings("later", [], db);
+    assert.equal((await db.orm.public.AuthTeamMember.where({ userId: "later" }).all()).length, 1);
+    await applyOidcTeamMappings("banned", ["Engineering"], db);
+    assert.equal((await db.orm.public.AuthTeamMember.where({ userId: "banned" }).all()).length, 0);
+    const isolated = await Promise.all(["a", "b"].map(group => withOidcContext(async () => {
+      captureOidcGroups([group]);
+      await new Promise(resolve => setTimeout(resolve, 5));
+      return getOidcGroups();
+    })));
+    assert.deepEqual(isolated, [["a"], ["b"]]);
+    assert.equal(getOidcGroups(), undefined);
+
+    // チーム単位・ユーザー単位のロール。ユーザー指定 > チーム設定 > 既定の順で解決する。
+    // 管理者復帰で作られたユーザー単位の指定を外し、チーム設定だけの状態にする。
+    for (const override of await db.orm.public.UserRoleOverride.all()) await db.orm.public.UserRoleOverride.where({ userId: override.userId }).delete();
+    await users.where({ id: "first" }).update({ role: "member" });
+    await setTeamRole(team.id, "administrator", db);
+    assert.equal((await users.first({ id: "first" }))?.role, "administrator");
+    assert.equal((await users.first({ id: "later" }))?.role, "administrator");
+    assert.equal((await users.first({ id: "banned" }))?.role, "member");
+    assert.equal((await resolveRoles(["later"], db)).get("later")?.source.kind, "team");
+    await setUserRole("later", "member", db);
+    assert.equal((await users.first({ id: "later" }))?.role, "member");
+    assert.deepEqual((await resolveRoles(["later"], db)).get("later"), { role: "member", source: { kind: "user" } });
+    await user("oidc");
+    await applyOidcTeamMappings("oidc", ["engineering"], db);
+    assert.equal((await users.first({ id: "oidc" }))?.role, "administrator");
+    await setTeamRole(team.id, null, db);
+    assert.equal((await users.first({ id: "first" }))?.role, "member");
+    assert.equal((await users.first({ id: "oidc" }))?.role, "member");
+    assert.equal((await users.first({ id: "later" }))?.role, "member");
+    await setUserRole("later", null, db);
+    assert.equal((await resolveRoles(["later"], db)).get("later")?.source.kind, "default");
+    await setTeamRole(team.id, "administrator", db);
+    assert.equal((await users.first({ id: "later" }))?.role, "administrator");
+
+    // headers を渡さないサーバー呼び出しでチームを削除し、所属とマッピングも消えることを確認する。
+    const testAuth = betterAuth({ ...authOptions, database: pool });
+    await testAuth.api.removeTeam({ body: { teamId: team.id, organizationId: (await db.orm.public.AuthTeam.first({ id: team.id }))!.organizationId } });
+    assert.equal(await db.orm.public.AuthTeam.first({ id: team.id }), null);
+    assert.equal((await db.orm.public.AuthTeamMember.where({ teamId: team.id }).all()).length, 0);
+    assert.equal((await db.orm.public.OidcTeamMapping.where({ teamId: team.id }).all()).length, 0);
+    assert.equal((await db.orm.public.TeamRole.where({ teamId: team.id }).all()).length, 0);
+    await syncUserRoles(["first", "later", "oidc"], db);
+    assert.equal((await users.first({ id: "later" }))?.role, "member");
+    assert.equal((await db.orm.public.AuthTeam.all()).length, 2);
+    await assert.rejects(testAuth.api.removeTeam({ body: { teamId: team.id, organizationId: "missing" } }));
+    // allowRemovingAllTeams により最後のチームも削除できる。
+    for (const remaining of await db.orm.public.AuthTeam.select("id", "organizationId").all()) {
+      await testAuth.api.removeTeam({ body: { teamId: remaining.id, organizationId: remaining.organizationId } });
+    }
+    assert.equal((await db.orm.public.AuthTeam.all()).length, 0);
+
+  } finally {
+    await db.close(); await pool.end();
+    await control.query(`DROP DATABASE IF EXISTS "${database}"`);
+    await control.end();
+    await applicationDb.close(); await authPool.end();
+  }
+});

@@ -1,21 +1,221 @@
 // use prisma-next
+// Better Auth owns DDL; Prisma maps these existing tables for application queries.
 
-model User {
-  id        Int      @id @default(autoincrement())
-  email     String   @unique
-  username  String?
-  name      String?
-  posts     Post[]
-  createdAt TimestamptzString @default(now())
-  updatedAt temporal.updatedAtString()
+model AuthUser {
+  id              String           @id(map: "auth_user_pkey")
+  name            String
+  email           String           @unique(map: "auth_user_email_key")
+  emailVerified   Boolean
+  image           String?
+  createdAt       TimestamptzString      @default(now())
+  updatedAt       TimestamptzString      @default(now())
+  role            String?
+  banned          Boolean?         @default(false)
+  banReason       String?
+  banExpires      TimestamptzString?
+  authAccounts    AuthAccount[]
+  authInvitations AuthInvitation[]
+  authMembers     AuthMember[]
+  authSessions    AuthSession[]
+  authTeamMembers AuthTeamMember[]
+  roleOverride    UserRoleOverride?
+
+  @@control(external)
+  @@map("auth_user")
 }
 
-model Post {
-  id        Int      @id @default(autoincrement())
-  title     String
-  content   String?
-  author    User     @relation(fields: [authorId], references: [id])
-  authorId  Int
-  createdAt TimestamptzString @default(now())
-  updatedAt temporal.updatedAtString()
+model AuthAccount {
+  id                    String       @id(map: "auth_account_pkey")
+  accountId             String
+  providerId            String
+  userId                String
+  accessToken           String?
+  refreshToken          String?
+  idToken               String?
+  accessTokenExpiresAt  TimestamptzString?
+  refreshTokenExpiresAt TimestamptzString?
+  scope                 String?
+  password              String?
+  createdAt             TimestamptzString  @default(now())
+  updatedAt             TimestamptzString
+  user                  AuthUser     @relation(fields: [userId], references: [id], onDelete: Cascade, map: "auth_account_userId_fkey")
+
+  @@index([userId], map: "auth_account_userId_idx")
+  @@control(external)
+  @@map("auth_account")
+}
+
+model AuthApikey {
+  id                  String       @id(map: "auth_apikey_pkey")
+  configId            String
+  name                String?
+  start               String?
+  referenceId         String
+  prefix              String?
+  key                 String
+  refillInterval      Int?
+  refillAmount        Int?
+  lastRefillAt        TimestamptzString?
+  enabled             Boolean?
+  rateLimitEnabled    Boolean?
+  rateLimitTimeWindow Int?
+  rateLimitMax        Int?
+  requestCount        Int?
+  remaining           Int?
+  lastRequest         TimestamptzString?
+  expiresAt           TimestamptzString?
+  createdAt           TimestamptzString
+  updatedAt           TimestamptzString
+  permissions         String?
+  metadata            String?
+
+  @@index([configId], map: "auth_apikey_configId_idx")
+  @@index([key], map: "auth_apikey_key_idx")
+  @@index([referenceId], map: "auth_apikey_referenceId_idx")
+  @@control(external)
+  @@map("auth_apikey")
+}
+
+model AuthOrganization {
+  id              String           @id(map: "auth_organization_pkey")
+  name            String
+  slug            String           @unique(map: "auth_organization_slug_key")
+  logo            String?
+  createdAt       TimestamptzString
+  metadata        String?
+  authInvitations AuthInvitation[]
+  authMembers     AuthMember[]
+  authTeams       AuthTeam[]
+
+  @@control(external)
+  @@map("auth_organization")
+}
+
+model AuthInvitation {
+  id             String           @id(map: "auth_invitation_pkey")
+  organizationId String
+  email          String
+  role           String?
+  teamId         String?
+  status         String
+  expiresAt      TimestamptzString
+  createdAt      TimestamptzString      @default(now())
+  inviterId      String
+  inviter        AuthUser         @relation(fields: [inviterId], references: [id], onDelete: Cascade, map: "auth_invitation_inviterId_fkey", index: false)
+  organization   AuthOrganization @relation(fields: [organizationId], references: [id], onDelete: Cascade, map: "auth_invitation_organizationId_fkey")
+
+  @@index([email], map: "auth_invitation_email_idx")
+  @@index([organizationId], map: "auth_invitation_organizationId_idx")
+  @@control(external)
+  @@map("auth_invitation")
+}
+
+model AuthMember {
+  id             String           @id(map: "auth_member_pkey")
+  organizationId String
+  userId         String
+  role           String
+  createdAt      TimestamptzString
+  organization   AuthOrganization @relation(fields: [organizationId], references: [id], onDelete: Cascade, map: "auth_member_organizationId_fkey")
+  user           AuthUser         @relation(fields: [userId], references: [id], onDelete: Cascade, map: "auth_member_userId_fkey")
+
+  @@index([organizationId], map: "auth_member_organizationId_idx")
+  @@index([userId], map: "auth_member_userId_idx")
+  @@control(external)
+  @@map("auth_member")
+}
+
+model AuthSession {
+  id                   String      @id(map: "auth_session_pkey")
+  expiresAt            TimestamptzString
+  token                String      @unique(map: "auth_session_token_key")
+  createdAt            TimestamptzString @default(now())
+  updatedAt            TimestamptzString
+  ipAddress            String?
+  userAgent            String?
+  userId               String
+  activeOrganizationId String?
+  activeTeamId         String?
+  impersonatedBy       String?
+  user                 AuthUser    @relation(fields: [userId], references: [id], onDelete: Cascade, map: "auth_session_userId_fkey")
+
+  @@index([userId], map: "auth_session_userId_idx")
+  @@control(external)
+  @@map("auth_session")
+}
+
+model AuthTeam {
+  oidcMappings OidcTeamMapping[]
+  teamRole     TeamRole?
+  id              String           @id(map: "auth_team_pkey")
+  name            String
+  memberCount     Int
+  organizationId  String
+  createdAt       TimestamptzString
+  updatedAt       TimestamptzString?
+  authTeamMembers AuthTeamMember[]
+  organization    AuthOrganization @relation(fields: [organizationId], references: [id], onDelete: Cascade, map: "auth_team_organizationId_fkey")
+
+  @@index([organizationId], map: "auth_team_organizationId_idx")
+  @@control(external)
+  @@map("auth_team")
+}
+
+model AuthTeamMember {
+  id            String       @id(map: "auth_team_member_pkey")
+  teamId        String
+  userId        String
+  membershipKey String?      @unique(map: "auth_team_member_membershipKey_key")
+  createdAt     TimestamptzString?
+  team          AuthTeam     @relation(fields: [teamId], references: [id], onDelete: Cascade, map: "auth_team_member_teamId_fkey")
+  user          AuthUser     @relation(fields: [userId], references: [id], onDelete: Cascade, map: "auth_team_member_userId_fkey")
+
+  @@index([teamId], map: "auth_team_member_teamId_idx")
+  @@index([userId], map: "auth_team_member_userId_idx")
+  @@control(external)
+  @@map("auth_team_member")
+}
+
+model AuthVerification {
+  id         String      @id(map: "auth_verification_pkey")
+  identifier String
+  value      String
+  expiresAt  TimestamptzString
+  createdAt  TimestamptzString @default(now())
+  updatedAt  TimestamptzString @default(now())
+
+  @@index([identifier], map: "auth_verification_identifier_idx")
+  @@control(external)
+  @@map("auth_verification")
+}
+
+// Application-managed rules; authentication tables above remain Better Auth-owned.
+model OidcTeamMapping {
+  id        String @id
+  groupName String
+  teamId    String
+  team      AuthTeam @relation(fields: [teamId], references: [id], onDelete: Cascade)
+
+  @@unique([groupName, teamId])
+  @@map("oidc_team_mapping")
+}
+
+// チーム単位のロール付与。所属メンバー全員に適用され、ユーザー単位の設定が優先する。
+model TeamRole {
+  teamId    String            @id
+  role      String
+  updatedAt TimestamptzString
+  team      AuthTeam          @relation(fields: [teamId], references: [id], onDelete: Cascade)
+
+  @@map("team_role")
+}
+
+// ユーザー単位のロール指定。チームの設定より優先する。
+model UserRoleOverride {
+  userId    String            @id
+  role      String
+  updatedAt TimestamptzString
+  user      AuthUser          @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("user_role_override")
 }
