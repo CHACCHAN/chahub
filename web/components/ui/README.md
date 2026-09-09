@@ -33,7 +33,7 @@ import { Card, List, ListItem, Input, Button, Badge, TextLink } from "@/componen
 - `Logo`: ChaHub のロゴ(結線マーク + ワードマーク)。文字サイズは `className` の `text-*` に連動します(`text-2xl` など)。マークだけ消したいときは `mark={false}`。
 - `PageHeader`: ページ見出しと任意の説明。
 - `Spinner`: 処理中のアイコン。
-- `ThemeProvider` / `ThemeToggle`: テーマ(ライト / ダーク / システム)。`ThemeProvider` はルートレイアウトで 1 回だけ使い、`next-themes` が `<html class="dark">` を付け外しします。`ThemeToggle` は 3 択のセグメントボタンで、共通ヘッダーとログイン画面に置いています。
+- `ThemeProvider` / `ThemeToggle`: `compact` でラベルを読み上げ用に残し、アイコンだけを表示できます。 テーマ(ライト / ダーク / システム)。`ThemeProvider` はルートレイアウトで 1 回だけ使い、`next-themes` が `<html class="dark">` を付け外しします。`ThemeToggle` は 3 択のセグメントボタンで、アプリのサイドバー（モバイルではコンテンツに重なる開閉メニュー）とログイン画面に置いています。
 - `NavigationProgress`: ページ遷移中に上部へ表示する NProgress のバー。ルートレイアウトに 1 つだけ置き、`@/components/ui/navigation-progress` から読み込みます。遷移開始は `instrumentation-client.ts` の `onRouterTransitionStart` から受け取り、完了は URL の変化で検知します。色は `app/globals.css` で指定しています。
 - `Toaster`: 全ページの共通通知領域。`@/components/ui/toaster` から読み込みます。通知の呼び出しは既存どおり `@/components/notifications` の `toast` を使います。
 

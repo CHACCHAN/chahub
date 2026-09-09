@@ -14,7 +14,7 @@ const subscribe = () => () => {};
 const useMounted = () => useSyncExternalStore(subscribe, () => true, () => false);
 
 /** テーマの切り替え(ライト / ダーク / システム)。サーバー側では選択状態を出さず、マウント後に反映する。 */
-export function ThemeToggle({ className = "" }: { className?: string }) {
+export function ThemeToggle({ className = "", compact = false }: { className?: string; compact?: boolean }) {
   const { theme, setTheme } = useTheme();
   const mounted = useMounted();
   const current = mounted ? theme ?? "system" : null;
@@ -24,7 +24,7 @@ export function ThemeToggle({ className = "" }: { className?: string }) {
       return <button key={option.value} type="button" onClick={() => setTheme(option.value)} aria-pressed={active} title={option.label}
         className={`inline-flex min-h-9 min-w-9 items-center justify-center gap-1.5 rounded-lg px-2.5 text-xs font-medium transition-colors motion-reduce:transition-none focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-500 ${active ? "bg-indigo-50 text-indigo-700 dark:bg-indigo-500/15 dark:text-indigo-300" : "text-zinc-500 hover:bg-zinc-100 hover:text-zinc-900 dark:text-zinc-400 dark:hover:bg-zinc-800 dark:hover:text-zinc-100"}`}>
         <Icon path={option.icon} />
-        <span className="sr-only sm:not-sr-only">{option.label}</span>
+        <span className={compact ? "sr-only" : "sr-only sm:not-sr-only"}>{option.label}</span>
       </button>;
     })}
   </div>;

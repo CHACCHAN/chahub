@@ -1,3 +1,5 @@
+import { routes } from "@/lib/routes";
+
 // 一般メニューに並べるサービス。サイドバー・ホーム・各ページで同じ定義を使う。
 // Client Component からも読み込むため、サーバー専用モジュールを import しないこと。
 export type GenericService = {
@@ -7,9 +9,11 @@ export type GenericService = {
   icon: string;
   /** 自宅の外からでも使える見込みのサービス。 */
   away: boolean;
+  available?: boolean;
 };
 
 export const genericServices: GenericService[] = [
+  { href: routes.kioskMonitor, title: "キオスク・見守り", description: "端末のカメラを確認したり、スピーカーを通じて声をかけられます。", away: true, available: true, icon: "M3 5h12v14H3zM15 10l6-4v12l-6-4" },
   { href: "/generic/messages", title: "伝言板", description: "家族へのメモや連絡を共有します。", away: true, icon: "M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" },
   { href: "/generic/shopping", title: "買い物リスト", description: "足りないものを追加して家族と共有します。", away: true, icon: "M6 6h15l-1.5 9h-12zM6 6 5 3H2M9 21a1 1 0 1 0 0-2 1 1 0 0 0 0 2zm9 0a1 1 0 1 0 0-2 1 1 0 0 0 0 2z" },
   { href: "/generic/schedule", title: "予定と天気", description: "今日の予定と天気予報をまとめて確認します。", away: true, icon: "M8 2v4M16 2v4M3 10h18M5 4h14a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2z" },

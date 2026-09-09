@@ -60,3 +60,8 @@ body {
     display: none;
   }
 }
+
+/* モバイルメニューのフォーカスと背景操作は dialog に任せ、背景スクロールだけ抑止する。 */
+body:has(dialog[data-app-menu][open]) {
+  overflow: hidden;
+}

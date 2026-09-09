@@ -64,7 +64,7 @@ export default async function GeneralHomePage() {
             </span>
             <span className="flex shrink-0 items-center gap-2">
               {service.away && <Badge variant="accent">外出先でも</Badge>}
-              <Badge>準備中</Badge>
+              {!service.available && <Badge>準備中</Badge>}
               <Icon path="M9 18l6-6-6-6" className="text-zinc-300 dark:text-zinc-700" />
             </span>
           </Link>

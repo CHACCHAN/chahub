@@ -12,6 +12,11 @@ const eslintConfig = defineConfig([
     "out/**",
     "build/**",
     "next-env.d.ts",
+    // Generated contracts and installed skill packages are not application source.
+    "prisma/contract.d.ts",
+    "migrations/snapshots/**",
+    ".agents/**",
+    ".claude/**",
   ]),
 ]);
 

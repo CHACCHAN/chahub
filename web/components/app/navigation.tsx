@@ -3,12 +3,13 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { Icon } from "@/components/ui";
+import { routes } from "@/lib/routes";
 import { genericServices } from "@/lib/generic/services";
 
 type Item = { label: string; icon: string; href: string };
 
 const generalItems: Item[] = [
-  { href: "/", label: "ホーム", icon: "M3 11 12 3l9 8M5 10v10a1 1 0 0 0 1 1h4v-6h4v6h4a1 1 0 0 0 1-1V10" },
+  { href: routes.app, label: "ホーム", icon: "M3 11 12 3l9 8M5 10v10a1 1 0 0 0 1 1h4v-6h4v6h4a1 1 0 0 0 1-1V10" },
   ...genericServices.map(service => ({ href: service.href, label: service.title, icon: service.icon })),
 ];
 
@@ -30,9 +31,9 @@ export function AppNavigation({ administrator }: { administrator: boolean }) {
     { title: "一般メニュー", items: generalItems },
     ...(administrator ? [{ title: "管理者メニュー", items: adminItems }] : []),
   ];
-  return <nav aria-label="メニュー" className="flex gap-1 overflow-x-auto p-2 md:flex-col md:gap-7 md:overflow-visible md:p-0">
-    {groups.map(group => <div key={group.title} className="flex shrink-0 gap-1 md:flex-col">
-      <p className="hidden px-4 pb-2 text-xs font-medium tracking-wider text-zinc-500 md:block">{group.title}</p>
+  return <nav aria-label="メニュー" className="flex flex-col gap-7">
+    {groups.map(group => <div key={group.title} className="flex flex-col gap-1">
+      <p className="px-4 pb-2 text-xs font-medium tracking-wider text-zinc-500">{group.title}</p>
       {group.items.map(item => {
         const active = item.href === "/" || item.href === "/admin"
           ? pathname === item.href
