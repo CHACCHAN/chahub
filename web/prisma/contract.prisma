@@ -19,7 +19,6 @@ model AuthUser {
   authSessions    AuthSession[]
   authTeamMembers AuthTeamMember[]
   roleOverride    UserRoleOverride?
-  kiosk           Kiosk?
 
   @@control(external)
   @@map("auth_user")
@@ -44,37 +43,6 @@ model AuthAccount {
   @@index([userId], map: "auth_account_userId_idx")
   @@control(external)
   @@map("auth_account")
-}
-
-model AuthApikey {
-  id                  String       @id(map: "auth_apikey_pkey")
-  configId            String
-  name                String?
-  start               String?
-  referenceId         String
-  prefix              String?
-  key                 String
-  refillInterval      Int?
-  refillAmount        Int?
-  lastRefillAt        TimestamptzString?
-  enabled             Boolean?
-  rateLimitEnabled    Boolean?
-  rateLimitTimeWindow Int?
-  rateLimitMax        Int?
-  requestCount        Int?
-  remaining           Int?
-  lastRequest         TimestamptzString?
-  expiresAt           TimestamptzString?
-  createdAt           TimestamptzString
-  updatedAt           TimestamptzString
-  permissions         String?
-  metadata            String?
-
-  @@index([configId], map: "auth_apikey_configId_idx")
-  @@index([key], map: "auth_apikey_key_idx")
-  @@index([referenceId], map: "auth_apikey_referenceId_idx")
-  @@control(external)
-  @@map("auth_apikey")
 }
 
 model AuthOrganization {
@@ -225,14 +193,19 @@ model UserRoleOverride {
   @@map("user_role_override")
 }
 
-// キオスク端末。通常のユーザー(auth_user、ロールは member)として管理し、API キーで認証する。
-model Kiosk {
-  userId    String            @id
+// キオスク端末。localStorage に保存する UUID(deviceId)で識別する。
+// 認証(Better Auth)は通さず、訪問時に deviceId を照合して端末を認識する。
+// 端末固有のデータはこの deviceId をキーに持たせる。
+model KioskDevice {
+  deviceId  String            @id
+  name      String
+  enabled   Boolean           @default(true)
   location  String?
   note      String?
+  // 端末がサイトを訪問した最後の時刻。見守り・通話の一覧はここが新しい端末だけを出す。
+  lastSeenAt TimestamptzString?
   createdAt TimestamptzString
   updatedAt TimestamptzString
-  user      AuthUser          @relation(fields: [userId], references: [id], onDelete: Cascade)
 
-  @@map("kiosk")
+  @@map("kiosk_device")
 }

@@ -1,7 +1,7 @@
 import { execFile } from "node:child_process";
 import { promisify } from "node:util";
-import { searchUsers } from "../lib/admin/users";
-import { applyOidcTeamMappings } from "../lib/admin/oidc-mapping";
+import { searchUsers } from "../features/admin/users";
+import { applyOidcTeamMappings } from "../features/admin/oidc-mapping";
 import { captureOidcGroups, getOidcGroups, withOidcContext } from "../lib/better-auth/oidc-context";
 import { test } from "node:test";
 import assert from "node:assert/strict";
@@ -12,10 +12,11 @@ import { betterAuth } from "better-auth";
 import { authOptions, authPool } from "../lib/better-auth/config";
 import type { Contract } from "../prisma/contract.d";
 import contractJson from "../prisma/contract.json";
-import { bootstrapAdministrator } from "../lib/admin/bootstrap";
-import { createAdminTeam, DuplicateTeamError } from "../lib/admin/teams";
-import { resolveRoles, setTeamRole, setUserRole, syncUserRoles } from "../lib/admin/roles";
-import { createKiosk, deleteKiosk, kioskUserIds, listKiosks, rotateKioskKey, setKioskKeyEnabled } from "../lib/admin/kiosks";
+import { bootstrapAdministrator } from "../features/admin/bootstrap";
+import { createAdminTeam, DuplicateTeamError } from "../features/admin/teams";
+import { resolveRoles, setTeamRole, setUserRole, syncUserRoles } from "../features/admin/roles";
+import { updateKiosk, deleteKiosk, listKiosks, setKioskEnabled } from "../features/kiosk/admin";
+import { listOnlineKioskDevices, touchKioskDevice } from "../features/kiosk/device";
 import { db as applicationDb } from "../prisma/db";
 
 const connectionString = process.env.TEST_DATABASE_URL;
@@ -164,29 +165,30 @@ test("Prisma admin queries, team creation and administrator recovery", { skip: !
     }
     assert.equal((await db.orm.public.AuthTeam.all()).length, 0);
 
-    // キオスク端末: 一般ユーザーとして作成し、API キーで認証する。
-    const kiosk = await createKiosk({ name: "受付タブレット", location: "1F", expiry: "never" }, { client: db, api: testAuth.api });
-    assert.equal((await users.first({ id: kiosk.userId }))?.role, "member");
-    assert.ok(await db.orm.public.Kiosk.first({ userId: kiosk.userId }));
-    assert.ok(kiosk.apiKey.startsWith("kiosk_"));
-    assert.equal(kiosk.expiresAt, null);
-    assert.equal(kiosk.header, "x-api-key");
-    assert.equal((await testAuth.api.verifyApiKey({ body: { key: kiosk.apiKey } })).valid, true);
-    assert.equal((await kioskUserIds(db)).has(kiosk.userId), true);
-    assert.equal((await listKiosks(db))[0]?.key?.status, "active");
-    await setKioskKeyEnabled(kiosk.userId, false, { client: db, api: testAuth.api });
-    assert.equal((await testAuth.api.verifyApiKey({ body: { key: kiosk.apiKey } })).valid, false);
-    assert.equal((await listKiosks(db))[0]?.key?.status, "disabled");
-    const rotated = await rotateKioskKey(kiosk.userId, "30", { client: db, api: testAuth.api });
-    assert.ok(rotated?.expiresAt);
-    assert.equal((await testAuth.api.verifyApiKey({ body: { key: kiosk.apiKey } })).valid, false);
-    assert.equal((await testAuth.api.verifyApiKey({ body: { key: rotated!.apiKey } })).valid, true);
-    assert.equal((await db.orm.public.AuthApikey.where({ referenceId: kiosk.userId }).all()).length, 1);
-    assert.equal((await listKiosks(db))[0]?.key?.status, "active");
-    assert.equal(await deleteKiosk(kiosk.userId, { client: db }), true);
-    assert.equal(await users.first({ id: kiosk.userId }), null);
-    assert.equal((await db.orm.public.AuthApikey.where({ referenceId: kiosk.userId }).all()).length, 0);
-    assert.equal(await deleteKiosk(kiosk.userId, { client: db }), false);
+    // 同時の初回アクセスでも同じ UUID の行は一つだけ。
+    const deviceId = "12345678-1234-4234-8234-123456789abc";
+    await Promise.all([touchKioskDevice(deviceId, db), touchKioskDevice(deviceId, db)]);
+    assert.equal((await listKiosks(db)).length, 1);
+    assert.ok(await updateKiosk({ deviceId, name: "受付タブレット", location: "1F" }, db));
+    const [registered] = await listKiosks(db);
+    assert.equal(registered?.name, "受付タブレット");
+    assert.equal(registered?.location, "1F");
+    assert.equal(registered?.enabled, true);
+    assert.equal(registered?.online, true);
+    // 訪問すると在席になり、見守り・通話の相手として選べる。
+    assert.equal((await touchKioskDevice("12345678-1234-4234-8234-123456789abc", db))?.name, "受付タブレット");
+    assert.deepEqual((await listOnlineKioskDevices(db)).map(device => device.id), ["12345678-1234-4234-8234-123456789abc"]);
+    assert.equal((await listKiosks(db))[0]?.online, true);
+    // 無効にすると訪問しても認識せず、一覧からも消える。
+    assert.equal(await setKioskEnabled("12345678-1234-4234-8234-123456789abc", false, db), true);
+    assert.equal(await touchKioskDevice("12345678-1234-4234-8234-123456789abc", db), null);
+    assert.equal((await listOnlineKioskDevices(db)).length, 0);
+    assert.equal((await listKiosks(db))[0]?.enabled, false);
+    assert.equal(await setKioskEnabled("12345678-1234-4234-8234-123456789abc", true, db), true);
+    assert.equal(await deleteKiosk("12345678-1234-4234-8234-123456789abc", db), true);
+    assert.equal((await listKiosks(db)).length, 0);
+    assert.equal(await deleteKiosk("12345678-1234-4234-8234-123456789abc", db), false);
+    assert.equal(await setKioskEnabled("12345678-1234-4234-8234-123456789abc", true, db), false);
 
   } finally {
     await db.close(); await pool.end();

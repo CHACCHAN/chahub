@@ -1,10 +1,10 @@
-import { OidcMappingForm, RemoveOidcMapping } from "@/components/admin/oidc-mapping-form";
-import { getAdminPageUser } from "@/lib/admin/access";
+import { OidcMappingForm, RemoveOidcMapping } from "@/features/admin/components/oidc-mapping-form";
+import { getAdminPageUser } from "@/features/admin/access";
 import { db } from "@/prisma/db";
-import { CreateTeamForm, DeleteTeamForm } from "@/components/admin/forms";
-import { PageHeader, Card, Badge, List, ListItem, TextLink } from "@/components/ui";
-import { STANDARD_TEAM_NAMES } from "@/lib/admin/oidc-mapping";
-import { isRole } from "@/lib/admin/roles";
+import { CreateTeamForm, DeleteTeamForm } from "@/features/admin/components/forms";
+import { PageHeader, Card, Badge, List, ListItem, TextLink } from "@/component/ui";
+import { STANDARD_TEAM_NAMES } from "@/features/admin/oidc-mapping";
+import { isRole } from "@/features/admin/roles";
 
 export default async function TeamsPage() {
   await getAdminPageUser();

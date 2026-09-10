@@ -1,6 +1,6 @@
 import "dotenv/config";
 import { db } from "../prisma/db";
-import { setUserRole } from "../lib/admin/roles";
+import { setUserRole } from "../features/admin/roles";
 
 try {
   const id = process.argv[2];

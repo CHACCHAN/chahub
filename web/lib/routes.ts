@@ -2,5 +2,6 @@
 export const routes = {
   app: "/",
   kiosk: "/kiosk",
+  kioskConnect: "/kiosk-connect",
   kioskMonitor: "/generic/kiosks",
 } as const;

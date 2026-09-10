@@ -1,16 +1,17 @@
 import type { BetterAuthOptions } from "better-auth";
 import { Pool } from "pg";
 import { admin, genericOAuth, organization } from "better-auth/plugins";
-import { apiKey } from "@better-auth/api-key";
 import { captureOidcGroups, getOidcGroups } from "./oidc-context";
-import { applyOidcTeamMappings } from "../admin/oidc-mapping";
+import { applyOidcTeamMappings } from "@/features/admin/oidc-mapping";
 import { roles } from "./roles";
-import { APIError, createAuthMiddleware } from "better-auth/api";
 import { nextCookies } from "better-auth/next-js";
+import { trustedOrigins } from "../trusted-origins";
 
 export const authPool = new Pool({ connectionString: process.env.DATABASE_URL })
 export const authOptions = {
   database: authPool,
+  // 既定は BETTER_AUTH_URL のオリジンだけ。開発機の LAN IP などは CHAHUB_TRUSTED_ORIGINS で足す。
+  trustedOrigins: trustedOrigins(),
   user: { modelName: "auth_user" },
   session: { modelName: "auth_session", cookieCache: { enabled: false } },
   account: { modelName: "auth_account" },
@@ -22,13 +23,6 @@ export const authOptions = {
       if (groups) await applyOidcTeamMappings(session.userId, groups);
       return { data: session };
     } } },
-  },
-  hooks: {
-    before: createAuthMiddleware(async (ctx) => {
-      if (ctx.path.startsWith("/admin/") && ctx.headers?.has("x-api-key")) {
-        throw new APIError("FORBIDDEN", { message: "Admin operations require a browser session." });
-      }
-    }),
   },
   plugins: [
     admin({ roles, defaultRole: "member", adminRoles: ["administrator"] }),
@@ -47,14 +41,6 @@ export const authOptions = {
           },
         }
       ]
-    }),
-    // キオスク端末ログイン
-    apiKey({
-      enableSessionForAPIKeys: true,
-      schema: { apikey: { modelName: "auth_apikey" } },
-      // 一覧でキーを見分けられるよう、先頭 12 文字(接頭辞込み)を保存する。
-      startingCharactersConfig: { shouldStore: true, charactersLength: 12 },
-      rateLimit: { enabled: true, timeWindow: 60 * 60 * 1000, maxRequests: 1000 },
     }),
     // チームを扱う
     organization({

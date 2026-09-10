@@ -8,10 +8,6 @@
       "model": "AuthAccount",
       "namespace": "public"
     },
-    "auth_apikey": {
-      "model": "AuthApikey",
-      "namespace": "public"
-    },
     "auth_invitation": {
       "model": "AuthInvitation",
       "namespace": "public"
@@ -44,8 +40,8 @@
       "model": "AuthVerification",
       "namespace": "public"
     },
-    "kiosk": {
-      "model": "Kiosk",
+    "kiosk_device": {
+      "model": "KioskDevice",
       "namespace": "public"
     },
     "oidc_team_mapping": {
@@ -220,237 +216,6 @@
               },
               "namespaceId": "public",
               "table": "auth_account"
-            }
-          },
-          "AuthApikey": {
-            "fields": {
-              "configId": {
-                "nullable": false,
-                "type": {
-                  "codecId": "pg/text@1",
-                  "kind": "scalar"
-                }
-              },
-              "createdAt": {
-                "nullable": false,
-                "type": {
-                  "codecId": "pg/timestamptz-string@1",
-                  "kind": "scalar"
-                }
-              },
-              "enabled": {
-                "nullable": true,
-                "type": {
-                  "codecId": "pg/bool@1",
-                  "kind": "scalar"
-                }
-              },
-              "expiresAt": {
-                "nullable": true,
-                "type": {
-                  "codecId": "pg/timestamptz-string@1",
-                  "kind": "scalar"
-                }
-              },
-              "id": {
-                "nullable": false,
-                "type": {
-                  "codecId": "pg/text@1",
-                  "kind": "scalar"
-                }
-              },
-              "key": {
-                "nullable": false,
-                "type": {
-                  "codecId": "pg/text@1",
-                  "kind": "scalar"
-                }
-              },
-              "lastRefillAt": {
-                "nullable": true,
-                "type": {
-                  "codecId": "pg/timestamptz-string@1",
-                  "kind": "scalar"
-                }
-              },
-              "lastRequest": {
-                "nullable": true,
-                "type": {
-                  "codecId": "pg/timestamptz-string@1",
-                  "kind": "scalar"
-                }
-              },
-              "metadata": {
-                "nullable": true,
-                "type": {
-                  "codecId": "pg/text@1",
-                  "kind": "scalar"
-                }
-              },
-              "name": {
-                "nullable": true,
-                "type": {
-                  "codecId": "pg/text@1",
-                  "kind": "scalar"
-                }
-              },
-              "permissions": {
-                "nullable": true,
-                "type": {
-                  "codecId": "pg/text@1",
-                  "kind": "scalar"
-                }
-              },
-              "prefix": {
-                "nullable": true,
-                "type": {
-                  "codecId": "pg/text@1",
-                  "kind": "scalar"
-                }
-              },
-              "rateLimitEnabled": {
-                "nullable": true,
-                "type": {
-                  "codecId": "pg/bool@1",
-                  "kind": "scalar"
-                }
-              },
-              "rateLimitMax": {
-                "nullable": true,
-                "type": {
-                  "codecId": "pg/int4@1",
-                  "kind": "scalar"
-                }
-              },
-              "rateLimitTimeWindow": {
-                "nullable": true,
-                "type": {
-                  "codecId": "pg/int4@1",
-                  "kind": "scalar"
-                }
-              },
-              "referenceId": {
-                "nullable": false,
-                "type": {
-                  "codecId": "pg/text@1",
-                  "kind": "scalar"
-                }
-              },
-              "refillAmount": {
-                "nullable": true,
-                "type": {
-                  "codecId": "pg/int4@1",
-                  "kind": "scalar"
-                }
-              },
-              "refillInterval": {
-                "nullable": true,
-                "type": {
-                  "codecId": "pg/int4@1",
-                  "kind": "scalar"
-                }
-              },
-              "remaining": {
-                "nullable": true,
-                "type": {
-                  "codecId": "pg/int4@1",
-                  "kind": "scalar"
-                }
-              },
-              "requestCount": {
-                "nullable": true,
-                "type": {
-                  "codecId": "pg/int4@1",
-                  "kind": "scalar"
-                }
-              },
-              "start": {
-                "nullable": true,
-                "type": {
-                  "codecId": "pg/text@1",
-                  "kind": "scalar"
-                }
-              },
-              "updatedAt": {
-                "nullable": false,
-                "type": {
-                  "codecId": "pg/timestamptz-string@1",
-                  "kind": "scalar"
-                }
-              }
-            },
-            "relations": {},
-            "storage": {
-              "fields": {
-                "configId": {
-                  "column": "configId"
-                },
-                "createdAt": {
-                  "column": "createdAt"
-                },
-                "enabled": {
-                  "column": "enabled"
-                },
-                "expiresAt": {
-                  "column": "expiresAt"
-                },
-                "id": {
-                  "column": "id"
-                },
-                "key": {
-                  "column": "key"
-                },
-                "lastRefillAt": {
-                  "column": "lastRefillAt"
-                },
-                "lastRequest": {
-                  "column": "lastRequest"
-                },
-                "metadata": {
-                  "column": "metadata"
-                },
-                "name": {
-                  "column": "name"
-                },
-                "permissions": {
-                  "column": "permissions"
-                },
-                "prefix": {
-                  "column": "prefix"
-                },
-                "rateLimitEnabled": {
-                  "column": "rateLimitEnabled"
-                },
-                "rateLimitMax": {
-                  "column": "rateLimitMax"
-                },
-                "rateLimitTimeWindow": {
-                  "column": "rateLimitTimeWindow"
-                },
-                "referenceId": {
-                  "column": "referenceId"
-                },
-                "refillAmount": {
-                  "column": "refillAmount"
-                },
-                "refillInterval": {
-                  "column": "refillInterval"
-                },
-                "remaining": {
-                  "column": "remaining"
-                },
-                "requestCount": {
-                  "column": "requestCount"
-                },
-                "start": {
-                  "column": "start"
-                },
-                "updatedAt": {
-                  "column": "updatedAt"
-                }
-              },
-              "namespaceId": "public",
-              "table": "auth_apikey"
             }
           },
           "AuthInvitation": {
@@ -1311,21 +1076,6 @@
                   "namespace": "public"
                 }
               },
-              "kiosk": {
-                "cardinality": "1:1",
-                "on": {
-                  "localFields": [
-                    "id"
-                  ],
-                  "targetFields": [
-                    "userId"
-                  ]
-                },
-                "to": {
-                  "model": "Kiosk",
-                  "namespace": "public"
-                }
-              },
               "roleOverride": {
                 "cardinality": "1:1",
                 "on": {
@@ -1453,7 +1203,7 @@
               "table": "auth_verification"
             }
           },
-          "Kiosk": {
+          "KioskDevice": {
             "fields": {
               "createdAt": {
                 "nullable": false,
@@ -1462,8 +1212,36 @@
                   "kind": "scalar"
                 }
               },
+              "deviceId": {
+                "nullable": false,
+                "type": {
+                  "codecId": "pg/text@1",
+                  "kind": "scalar"
+                }
+              },
+              "enabled": {
+                "nullable": false,
+                "type": {
+                  "codecId": "pg/bool@1",
+                  "kind": "scalar"
+                }
+              },
+              "lastSeenAt": {
+                "nullable": true,
+                "type": {
+                  "codecId": "pg/timestamptz-string@1",
+                  "kind": "scalar"
+                }
+              },
               "location": {
                 "nullable": true,
+                "type": {
+                  "codecId": "pg/text@1",
+                  "kind": "scalar"
+                }
+              },
+              "name": {
+                "nullable": false,
                 "type": {
                   "codecId": "pg/text@1",
                   "kind": "scalar"
@@ -1482,52 +1260,38 @@
                   "codecId": "pg/timestamptz-string@1",
                   "kind": "scalar"
                 }
-              },
-              "userId": {
-                "nullable": false,
-                "type": {
-                  "codecId": "pg/text@1",
-                  "kind": "scalar"
-                }
               }
             },
-            "relations": {
-              "user": {
-                "cardinality": "N:1",
-                "on": {
-                  "localFields": [
-                    "userId"
-                  ],
-                  "targetFields": [
-                    "id"
-                  ]
-                },
-                "to": {
-                  "model": "AuthUser",
-                  "namespace": "public"
-                }
-              }
-            },
+            "relations": {},
             "storage": {
               "fields": {
                 "createdAt": {
                   "column": "createdAt"
                 },
+                "deviceId": {
+                  "column": "deviceId"
+                },
+                "enabled": {
+                  "column": "enabled"
+                },
+                "lastSeenAt": {
+                  "column": "lastSeenAt"
+                },
                 "location": {
                   "column": "location"
+                },
+                "name": {
+                  "column": "name"
                 },
                 "note": {
                   "column": "note"
                 },
                 "updatedAt": {
                   "column": "updatedAt"
-                },
-                "userId": {
-                  "column": "userId"
                 }
               },
               "namespaceId": "public",
-              "table": "kiosk"
+              "table": "kiosk_device"
             }
           },
           "OidcTeamMapping": {
@@ -1837,152 +1601,6 @@
                   "id"
                 ],
                 "name": "auth_account_pkey"
-              },
-              "uniques": []
-            },
-            "auth_apikey": {
-              "columns": {
-                "configId": {
-                  "codecId": "pg/text@1",
-                  "nativeType": "text",
-                  "nullable": false
-                },
-                "createdAt": {
-                  "codecId": "pg/timestamptz-string@1",
-                  "nativeType": "timestamptz",
-                  "nullable": false
-                },
-                "enabled": {
-                  "codecId": "pg/bool@1",
-                  "nativeType": "bool",
-                  "nullable": true
-                },
-                "expiresAt": {
-                  "codecId": "pg/timestamptz-string@1",
-                  "nativeType": "timestamptz",
-                  "nullable": true
-                },
-                "id": {
-                  "codecId": "pg/text@1",
-                  "nativeType": "text",
-                  "nullable": false
-                },
-                "key": {
-                  "codecId": "pg/text@1",
-                  "nativeType": "text",
-                  "nullable": false
-                },
-                "lastRefillAt": {
-                  "codecId": "pg/timestamptz-string@1",
-                  "nativeType": "timestamptz",
-                  "nullable": true
-                },
-                "lastRequest": {
-                  "codecId": "pg/timestamptz-string@1",
-                  "nativeType": "timestamptz",
-                  "nullable": true
-                },
-                "metadata": {
-                  "codecId": "pg/text@1",
-                  "nativeType": "text",
-                  "nullable": true
-                },
-                "name": {
-                  "codecId": "pg/text@1",
-                  "nativeType": "text",
-                  "nullable": true
-                },
-                "permissions": {
-                  "codecId": "pg/text@1",
-                  "nativeType": "text",
-                  "nullable": true
-                },
-                "prefix": {
-                  "codecId": "pg/text@1",
-                  "nativeType": "text",
-                  "nullable": true
-                },
-                "rateLimitEnabled": {
-                  "codecId": "pg/bool@1",
-                  "nativeType": "bool",
-                  "nullable": true
-                },
-                "rateLimitMax": {
-                  "codecId": "pg/int4@1",
-                  "nativeType": "int4",
-                  "nullable": true
-                },
-                "rateLimitTimeWindow": {
-                  "codecId": "pg/int4@1",
-                  "nativeType": "int4",
-                  "nullable": true
-                },
-                "referenceId": {
-                  "codecId": "pg/text@1",
-                  "nativeType": "text",
-                  "nullable": false
-                },
-                "refillAmount": {
-                  "codecId": "pg/int4@1",
-                  "nativeType": "int4",
-                  "nullable": true
-                },
-                "refillInterval": {
-                  "codecId": "pg/int4@1",
-                  "nativeType": "int4",
-                  "nullable": true
-                },
-                "remaining": {
-                  "codecId": "pg/int4@1",
-                  "nativeType": "int4",
-                  "nullable": true
-                },
-                "requestCount": {
-                  "codecId": "pg/int4@1",
-                  "nativeType": "int4",
-                  "nullable": true
-                },
-                "start": {
-                  "codecId": "pg/text@1",
-                  "nativeType": "text",
-                  "nullable": true
-                },
-                "updatedAt": {
-                  "codecId": "pg/timestamptz-string@1",
-                  "nativeType": "timestamptz",
-                  "nullable": false
-                }
-              },
-              "control": "external",
-              "foreignKeys": [],
-              "indexes": [
-                {
-                  "columns": [
-                    "configId"
-                  ],
-                  "name": "auth_apikey_configId_idx",
-                  "unique": false
-                },
-                {
-                  "columns": [
-                    "key"
-                  ],
-                  "name": "auth_apikey_key_idx",
-                  "unique": false
-                },
-                {
-                  "columns": [
-                    "referenceId"
-                  ],
-                  "name": "auth_apikey_referenceId_idx",
-                  "unique": false
-                }
-              ],
-              "primaryKey": {
-                "columns": [
-                  "id"
-                ],
-                "name": "auth_apikey_pkey"
               },
               "uniques": []
             },
@@ -2667,17 +2285,41 @@
               },
               "uniques": []
             },
-            "kiosk": {
+            "kiosk_device": {
               "columns": {
                 "createdAt": {
                   "codecId": "pg/timestamptz-string@1",
                   "nativeType": "timestamptz",
                   "nullable": false
                 },
+                "deviceId": {
+                  "codecId": "pg/text@1",
+                  "nativeType": "text",
+                  "nullable": false
+                },
+                "enabled": {
+                  "codecId": "pg/bool@1",
+                  "default": {
+                    "kind": "literal",
+                    "value": true
+                  },
+                  "nativeType": "bool",
+                  "nullable": false
+                },
+                "lastSeenAt": {
+                  "codecId": "pg/timestamptz-string@1",
+                  "nativeType": "timestamptz",
+                  "nullable": true
+                },
                 "location": {
                   "codecId": "pg/text@1",
                   "nativeType": "text",
                   "nullable": true
+                },
+                "name": {
+                  "codecId": "pg/text@1",
+                  "nativeType": "text",
+                  "nullable": false
                 },
                 "note": {
                   "codecId": "pg/text@1",
@@ -2688,36 +2330,13 @@
                   "codecId": "pg/timestamptz-string@1",
                   "nativeType": "timestamptz",
                   "nullable": false
-                },
-                "userId": {
-                  "codecId": "pg/text@1",
-                  "nativeType": "text",
-                  "nullable": false
                 }
               },
-              "foreignKeys": [
-                {
-                  "onDelete": "cascade",
-                  "source": {
-                    "columns": [
-                      "userId"
-                    ],
-                    "namespaceId": "public",
-                    "tableName": "kiosk"
-                  },
-                  "target": {
-                    "columns": [
-                      "id"
-                    ],
-                    "namespaceId": "public",
-                    "tableName": "auth_user"
-                  }
-                }
-              ],
+              "foreignKeys": [],
               "indexes": [],
               "primaryKey": {
                 "columns": [
-                  "userId"
+                  "deviceId"
                 ]
               },
               "uniques": []
@@ -2899,7 +2518,7 @@
         "kind": "postgres-schema"
       }
     },
-    "storageHash": "aa1324efb380e2a1cc334fe8e08a26790d755913b33508379d454ae83bc5a04f"
+    "storageHash": "5877245e2926e95f17966ba0eef0d779cbd878ed6e514af1a4b1c1b15453d795"
   },
   "capabilities": {
     "postgres": {

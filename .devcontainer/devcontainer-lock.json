@@ -1,22 +1,17 @@
 {
   "features": {
-    "ghcr.io/casl0/devcontainer-features/android-sdk:1": {
-      "version": "1.0.1",
-      "resolved": "ghcr.io/casl0/devcontainer-features/android-sdk@sha256:4a5033245cf7557bfce4efdf20ac6d32b490e3bab8bfd225f7819ab1026b513e",
-      "integrity": "sha256:4a5033245cf7557bfce4efdf20ac6d32b490e3bab8bfd225f7819ab1026b513e"
-    },
     "ghcr.io/chacchan/devcontainer-features/agents:latest": {
-      "version": "1.0.3",
-      "resolved": "ghcr.io/chacchan/devcontainer-features/agents@sha256:c5bc5bbd38d52534d5276569cb03653b6e65e807ea509cb48c94ee25505a3cb2",
-      "integrity": "sha256:c5bc5bbd38d52534d5276569cb03653b6e65e807ea509cb48c94ee25505a3cb2",
+      "version": "1.0.4",
+      "resolved": "ghcr.io/chacchan/devcontainer-features/agents@sha256:0bfe11fa09800e7158f13c2d264e516e16e6e929928fbd02471eacaf4b239030",
+      "integrity": "sha256:0bfe11fa09800e7158f13c2d264e516e16e6e929928fbd02471eacaf4b239030",
       "dependsOn": [
         "ghcr.io/devcontainers/features/node:2"
       ]
     },
     "ghcr.io/chacchan/devcontainer-features/my-assets:latest": {
-      "version": "1.0.1",
-      "resolved": "ghcr.io/chacchan/devcontainer-features/my-assets@sha256:6bd549be6d97468f0e28d29d3a54a8ba321b88d3fdc12b81c0b0b7e3cde63c81",
-      "integrity": "sha256:6bd549be6d97468f0e28d29d3a54a8ba321b88d3fdc12b81c0b0b7e3cde63c81",
+      "version": "1.0.2",
+      "resolved": "ghcr.io/chacchan/devcontainer-features/my-assets@sha256:02a7f3b1775234a5e14c989e59a6126843cfa3c6bbf6e7e730ab885eff92cd88",
+      "integrity": "sha256:02a7f3b1775234a5e14c989e59a6126843cfa3c6bbf6e7e730ab885eff92cd88",
       "dependsOn": [
         "ghcr.io/chacchan/devcontainer-features/agents:latest",
         "ghcr.io/devcontainers/features/docker-outside-of-docker:1",
@@ -29,35 +24,25 @@
       "resolved": "ghcr.io/devcontainers-extra/features/apt-packages@sha256:55c54412112da81b9381e470cdbbe55278564950d1ff536ce925b1e8e096babd",
       "integrity": "sha256:55c54412112da81b9381e470cdbbe55278564950d1ff536ce925b1e8e096babd"
     },
+    "ghcr.io/devcontainers-extra/features/cloudflared:1": {
+      "version": "1.0.8",
+      "resolved": "ghcr.io/devcontainers-extra/features/cloudflared@sha256:18b7db2cd2e84ce93716c465bebc4b5944b8309bdfe6fbf8c49b9129f3cc8253",
+      "integrity": "sha256:18b7db2cd2e84ce93716c465bebc4b5944b8309bdfe6fbf8c49b9129f3cc8253"
+    },
     "ghcr.io/devcontainers/features/docker-outside-of-docker:1": {
       "version": "1.10.0",
       "resolved": "ghcr.io/devcontainers/features/docker-outside-of-docker@sha256:c2c2cf829505ead8e4892c88c31b6594ae94a2bbb209e16e1fac456c1a3a624e",
       "integrity": "sha256:c2c2cf829505ead8e4892c88c31b6594ae94a2bbb209e16e1fac456c1a3a624e"
-    },
-    "ghcr.io/devcontainers/features/java:1": {
-      "version": "1.8.3",
-      "resolved": "ghcr.io/devcontainers/features/java@sha256:61a839211feda1e2a1f10646648a948e733e4d98d770f3a4b6698a3c5fc92abe",
-      "integrity": "sha256:61a839211feda1e2a1f10646648a948e733e4d98d770f3a4b6698a3c5fc92abe"
     },
     "ghcr.io/devcontainers/features/node:2": {
       "version": "2.1.0",
       "resolved": "ghcr.io/devcontainers/features/node@sha256:586c9a6f7dd40bd3ba2cd41e7f2f88dcc31fbe5d1442afcbf07ffbc66b686857",
       "integrity": "sha256:586c9a6f7dd40bd3ba2cd41e7f2f88dcc31fbe5d1442afcbf07ffbc66b686857"
     },
-    "ghcr.io/devcontainers/features/rust:1": {
-      "version": "1.5.1",
-      "resolved": "ghcr.io/devcontainers/features/rust@sha256:f7afd923fd283db88ca961342ae65ea63a8c95bcf86e42c4c363f43bc4ba26a5",
-      "integrity": "sha256:f7afd923fd283db88ca961342ae65ea63a8c95bcf86e42c4c363f43bc4ba26a5"
-    },
     "ghcr.io/itsmechlark/features/postgresql:1": {
       "version": "1.9.0",
       "resolved": "ghcr.io/itsmechlark/features/postgresql@sha256:356d919ede2f7dce3f921b424301f965eeeb63e67840afec26eeb362998f08f9",
       "integrity": "sha256:356d919ede2f7dce3f921b424301f965eeeb63e67840afec26eeb362998f08f9"
-    },
-    "ghcr.io/olivierlemasle/devcontainers-features/tauri:1": {
-      "version": "1.0.0",
-      "resolved": "ghcr.io/olivierlemasle/devcontainers-features/tauri@sha256:7bc1f55aa938b281311098beadf74603e979601bb7de87115b4470fb5123341c",
-      "integrity": "sha256:7bc1f55aa938b281311098beadf74603e979601bb7de87115b4470fb5123341c"
     },
     "ghcr.io/rails/devcontainer/features/bun:1": {
       "version": "1.0.2",

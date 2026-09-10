@@ -2,9 +2,9 @@ import Link from "next/link";
 import { redirect } from "next/navigation";
 import { getSession } from "@/lib/better-auth/session";
 import { db } from "@/prisma/db";
-import { resolveRoles, roleLabels } from "@/lib/admin/roles";
-import { PageHeader, Card, Badge, List, ListItem, Icon, TextLink, Notice } from "@/components/ui";
-import { genericServices } from "@/lib/generic/services";
+import { resolveRoles, roleLabels } from "@/features/admin/roles";
+import { PageHeader, Card, Badge, List, ListItem, Icon, TextLink, Notice } from "@/component/ui";
+import { genericServices } from "@/features/generic/services";
 
 // ブラウザー(スマートフォン・パソコンなど、キオスク端末以外)からログインしたときのホーム画面(ルート /)。
 // 管理者画面と同じサイドバーレイアウト((app)/layout.tsx)の中に入り、サイドバーの「一般メニュー」から辿る。

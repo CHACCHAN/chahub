@@ -1,12 +1,14 @@
 import { redirect } from "next/navigation";
 import { getSession } from "@/lib/better-auth/session";
-import { Card, Logo, ThemeToggle } from "@/components/ui";
-import LoginForm from "./login-form";
+import { Card, Logo, ThemeToggle } from "@/component/ui";
+import { KioskEntryRedirect } from "@/features/kiosk/components/kiosk-entry-redirect";
+import LoginForm from "@/features/auth/components/login-form";
 
-export default async function LoginPage({ searchParams }: { searchParams: Promise<{ error?: string }> }) {
+export default async function LoginPage({ searchParams }: { searchParams: Promise<{ error?: string; browser?: string }> }) {
   if (await getSession()) redirect("/");
-  const { error } = await searchParams;
+  const { error, browser } = await searchParams;
   return <main className="relative flex min-h-dvh items-center justify-center bg-zinc-50 px-6 py-12 dark:bg-zinc-950">
+    {!browser && <KioskEntryRedirect />}
     <div className="absolute top-4 right-4"><ThemeToggle /></div>
     <div className="w-full max-w-md">
       <Card as="section" aria-labelledby="login-heading" className="p-8 sm:p-10">

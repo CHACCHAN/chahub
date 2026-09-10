@@ -1,12 +1,11 @@
-import { getAdminPageUser } from "@/lib/admin/access";
-import { searchUsers } from "@/lib/admin/users";
-import { kioskUserIds } from "@/lib/admin/kiosks";
-import { isRole, resolveRoles, roleLabels, type ResolvedRole, type Role } from "@/lib/admin/roles";
+import { getAdminPageUser } from "@/features/admin/access";
+import { searchUsers } from "@/features/admin/users";
+import { isRole, resolveRoles, roleLabels, type ResolvedRole, type Role } from "@/features/admin/roles";
 import { db } from "@/prisma/db";
-import { UserSearch } from "@/components/admin/user-search";
-import { UserIdentity } from "@/components/admin/user-identity";
-import { RoleForm, TeamRoleForm } from "@/components/admin/forms";
-import { PageHeader, Card, Badge, List, ListItem } from "@/components/ui";
+import { UserSearch } from "@/features/admin/components/user-search";
+import { UserIdentity } from "@/features/admin/components/user-identity";
+import { RoleForm, TeamRoleForm } from "@/features/admin/components/forms";
+import { PageHeader, Card, Badge, List, ListItem } from "@/component/ui";
 
 const roles = [
   { name: "一般ユーザー", key: "member", description: "通常の機能を利用できます。" },
@@ -23,13 +22,12 @@ export default async function RolesPage({ searchParams }: { searchParams: Promis
   const actor = await getAdminPageUser();
   const { q } = await searchParams;
   const query = (typeof q === "string" ? q : "").trim().slice(0, 200);
-  const [users, allUsers, teams, teamRoles, kiosks] = await Promise.all([
+  const [users, allUsers, teams, teamRoles] = await Promise.all([
     searchUsers(query),
     db.orm.public.AuthUser.select("role").all(),
     db.orm.public.AuthTeam.select("id", "name").include("organization", organization => organization.select("name"))
       .include("authTeamMembers", members => members.count()).orderBy(team => team.createdAt.desc()).all(),
     db.orm.public.TeamRole.all(),
-    kioskUserIds(),
   ]);
   const resolved = await resolveRoles(users.map(user => user.id));
   const roleOfTeam = new Map(teamRoles.map(teamRole => [teamRole.teamId, teamRole.role]));
@@ -80,7 +78,7 @@ export default async function RolesPage({ searchParams }: { searchParams: Promis
           const current = resolved.get(user.id) ?? { role: "member" as const, source: { kind: "default" as const } };
           return <ListItem key={user.id} className="flex-col items-stretch lg:flex-row lg:items-center">
             <div className="flex min-w-0 flex-wrap items-center gap-3">
-              <UserIdentity user={user} self={user.id === actor.id} kiosk={kiosks.has(user.id)} />
+              <UserIdentity user={user} self={user.id === actor.id} />
               <div className="flex items-center gap-2">
                 <Badge variant={current.role === "administrator" ? "accent" : "neutral"}>{roleLabels[current.role]}</Badge>
                 <span className="text-xs text-zinc-500">{sourceLabel(current)}</span>

@@ -1,7 +1,7 @@
 import { test } from "node:test";
 import assert from "node:assert/strict";
 import { AccessToken, TrackSource } from "livekit-server-sdk";
-import { kioskGrant } from "../lib/livekit/permissions";
+import { kioskGrant } from "../features/kiosk/permissions";
 
 test("一般端末は見守りと音声だけを利用でき、配信元やビデオ通話を偽装できない", () => {
   assert.equal(kioskGrant("host", "device", "user", false), null);

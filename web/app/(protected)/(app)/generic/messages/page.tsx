@@ -1,7 +1,7 @@
 import { redirect } from "next/navigation";
 import { getSession } from "@/lib/better-auth/session";
-import { findService } from "@/lib/generic/services";
-import { Button, Badge, Card, Input, List, ListItem, Notice, PageHeader } from "@/components/ui";
+import { findService } from "@/features/generic/services";
+import { Button, Badge, Card, Input, List, ListItem, Notice, PageHeader } from "@/component/ui";
 
 const service = findService("/generic/messages");
 
